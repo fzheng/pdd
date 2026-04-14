@@ -34,6 +34,7 @@ const defaultSettings: PipelineSettings = {
   maxColors: 0,
   mirror: false,
   saturation: 1.05,
+  despeckle: 6,
 };
 
 export default function Home() {

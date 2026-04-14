@@ -25,6 +25,7 @@ export type TranslationKey =
   | "controls.maxColors.n"
   | "controls.mirror"
   | "controls.saturation"
+  | "controls.despeckle"
   | "controls.generate"
   | "controls.generating"
   | "preview.original"
@@ -99,6 +100,7 @@ const zhCN: Dict = {
   "controls.maxColors.n": "{n} 色",
   "controls.mirror": "镜像（方便烫图）",
   "controls.saturation": "饱和度",
+  "controls.despeckle": "背景清理",
   "controls.generate": "✨ 生成图纸",
   "controls.generating": "生成中…",
   "preview.original": "原始图片",
@@ -172,6 +174,7 @@ const zhTW: Dict = {
   "controls.maxColors.n": "{n} 色",
   "controls.mirror": "鏡像（方便燙圖）",
   "controls.saturation": "飽和度",
+  "controls.despeckle": "背景清理",
   "controls.generate": "✨ 產生圖紙",
   "controls.generating": "產生中…",
   "preview.original": "原始圖片",
@@ -245,6 +248,7 @@ const en: Dict = {
   "controls.maxColors.n": "{n} colors",
   "controls.mirror": "Mirror (for ironing)",
   "controls.saturation": "Saturation",
+  "controls.despeckle": "Background cleanup",
   "controls.generate": "✨ Make Pattern",
   "controls.generating": "Working magic…",
   "preview.original": "Your Photo",

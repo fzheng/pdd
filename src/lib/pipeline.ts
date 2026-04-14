@@ -3,6 +3,7 @@ import { downsampleImage, mirrorPixelGrid } from "./imageUtils";
 import { preparePalette, prepareFromColors, findNearestColor } from "./colorMatch";
 import { applyDithering } from "./dithering";
 import { selectBestPaletteSubset } from "./paletteReduce";
+import { despecklePattern } from "./despeckle";
 
 /** Build a pattern from a 2D grid of matched bead colors. */
 export function buildPatternFromCells(
@@ -41,11 +42,13 @@ export function generatePattern(
     maxColors,
     mirror,
     saturation,
+    despeckle,
   } = settings;
 
   // 1. Downsample image (gamma-correct, optional saturation)
   let pixelData = downsampleImage(img, gridWidth, gridHeight, {
     saturationBoost: saturation,
+    alphaThreshold: 0.65,
   });
   if (mirror) pixelData = mirrorPixelGrid(pixelData);
 
@@ -64,8 +67,12 @@ export function generatePattern(
   // 4. Quantize (dithering or nearest-neighbor)
   const matched = applyDithering(pixelData, prepared, algorithm, dithering);
 
-  // 5. Build result
-  return buildPatternFromCells(matched);
+  // 5. Build initial pattern, then optionally despeckle exterior noise
+  let pattern = buildPatternFromCells(matched);
+  if (despeckle > 0) {
+    pattern = despecklePattern(pattern, { threshold: despeckle });
+  }
+  return pattern;
 }
 
 /** Replace all cells of one color with another and rebuild counts */

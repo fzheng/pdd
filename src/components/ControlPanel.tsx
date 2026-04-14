@@ -137,6 +137,23 @@ export default function ControlPanel({
           </div>
         </Field>
 
+        <Field label={t("controls.despeckle")}>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min={0}
+              max={20}
+              step={1}
+              value={settings.despeckle}
+              onChange={(e) => update({ despeckle: parseInt(e.target.value) })}
+              className="w-24 accent-pink-400"
+            />
+            <span className="text-xs font-mono text-gray-500 w-8">
+              {settings.despeckle === 0 ? "off" : settings.despeckle}
+            </span>
+          </div>
+        </Field>
+
         <label className="flex items-center gap-2 pb-2 cursor-pointer">
           <input
             type="checkbox"

@@ -42,6 +42,12 @@ export interface PipelineSettings {
   mirror: boolean;
   /** Saturation multiplier (1 = identity) */
   saturation: number;
+  /**
+   * Background cleanup: remove isolated non-background components smaller
+   * than this many cells when they sit entirely in the exterior region.
+   * 0 disables.
+   */
+  despeckle: number;
 }
 
 /** A single cell in the output pattern grid */
