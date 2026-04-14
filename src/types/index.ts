@@ -15,7 +15,19 @@ export interface BeadPalette {
 }
 
 /** User-selectable color matching algorithm */
-export type ColorMatchAlgorithm = "rgb-euclidean" | "cielab-euclidean";
+export type ColorMatchAlgorithm =
+  | "rgb-euclidean"
+  | "cielab-euclidean"
+  | "ciede2000";
+
+/** User-selectable dithering method */
+export type DitheringMethod =
+  | "none"
+  | "floyd-steinberg"
+  | "atkinson"
+  | "stucki"
+  | "burkes"
+  | "sierra";
 
 /** Settings for the processing pipeline */
 export interface PipelineSettings {
@@ -23,7 +35,13 @@ export interface PipelineSettings {
   gridHeight: number;
   palette: BeadPalette;
   algorithm: ColorMatchAlgorithm;
-  ditheringEnabled: boolean;
+  dithering: DitheringMethod;
+  /** If > 0, limit palette to best-matching N colors for the image */
+  maxColors: number;
+  /** Mirror horizontally (prep for ironing) */
+  mirror: boolean;
+  /** Saturation multiplier (1 = identity) */
+  saturation: number;
 }
 
 /** A single cell in the output pattern grid */
@@ -47,3 +65,5 @@ export interface LabColor {
   a: number;
   b: number;
 }
+
+export type Locale = "zh-CN" | "zh-TW" | "en";
