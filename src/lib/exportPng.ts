@@ -1,11 +1,13 @@
 import { BeadPattern } from "@/types";
-import { renderPatternToCanvas } from "./renderPattern";
+import { renderPatternToCanvas, BeadShape } from "./renderPattern";
 
 /** Render pattern at a specified cell size and trigger download as PNG */
 export function exportPatternAsPng(
   pattern: BeadPattern,
   fileName: string,
-  cellSize = 24,
+  cellSize = 28,
+  shape: BeadShape = "circle",
+  showLabels = false,
 ): void {
   const canvas = document.createElement("canvas");
   canvas.width = pattern.width * cellSize;
@@ -13,8 +15,10 @@ export function exportPatternAsPng(
   const ctx = canvas.getContext("2d")!;
   renderPatternToCanvas(ctx, pattern, {
     cellSize,
-    showGridLines: true,
-    showColorCodes: cellSize >= 14,
+    shape,
+    showGridLines: shape === "square",
+    showColorCodes: showLabels,
+    background: "#FFFFFF",
   });
 
   canvas.toBlob((blob) => {

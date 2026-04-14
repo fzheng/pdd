@@ -5,7 +5,6 @@ export const mardPalette: BeadPalette = {
   brand: "Mard",
   colors: [
     { id: "mard-M01", name: "White", brand: "Mard", sku: "M01", hex: "#FFFFFF", rgb: [255, 255, 255] },
-    { id: "mard-M02", name: "Snow", brand: "Mard", sku: "M02", hex: "#F9F9F9", rgb: [249, 249, 249] },
     { id: "mard-M03", name: "Cream", brand: "Mard", sku: "M03", hex: "#FFF4D6", rgb: [255, 244, 214] },
     { id: "mard-M04", name: "Yellow", brand: "Mard", sku: "M04", hex: "#FFE817", rgb: [255, 232, 23] },
     { id: "mard-M05", name: "Golden", brand: "Mard", sku: "M05", hex: "#F9C313", rgb: [249, 195, 19] },

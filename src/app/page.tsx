@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { PipelineSettings, BeadColor } from "@/types";
 import { perlerPalette } from "@/data/perlerPalette";
-import { loadImage } from "@/lib/imageUtils";
+import { loadImage, suggestGridSize } from "@/lib/imageUtils";
 import { generatePattern, setCellColor, replaceColor } from "@/lib/pipeline";
 import {
   PatternHistory,
@@ -26,11 +26,11 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useI18n } from "@/i18n/I18nProvider";
 
 const defaultSettings: PipelineSettings = {
-  gridWidth: 29,
-  gridHeight: 29,
+  gridWidth: 58,
+  gridHeight: 58,
   palette: perlerPalette,
   algorithm: "ciede2000",
-  dithering: "floyd-steinberg",
+  dithering: "none",
   maxColors: 0,
   mirror: false,
   saturation: 1.05,
@@ -57,6 +57,9 @@ export default function Home() {
     setHistory(emptyHistory());
     setEditMode("none");
     setActiveColor(null);
+    // Auto-adjust grid to preserve image aspect ratio
+    const suggested = suggestGridSize(img, 58);
+    setSettings((s) => ({ ...s, gridWidth: suggested.width, gridHeight: suggested.height }));
   }, []);
 
   const handleGenerate = useCallback(() => {

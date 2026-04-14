@@ -18,18 +18,19 @@ export function loadImage(file: File): Promise<HTMLImageElement> {
 }
 
 /**
- * Gamma-correct downsampling. We extract pixel data from the source image,
- * convert to linear RGB, average each block of source pixels (box filter),
- * then convert back to sRGB. This preserves luminance correctly — naive
- * sRGB-space averaging darkens colors, especially mid-tones.
+ * Gamma-correct downsampling. Averages source pixel blocks in linear RGB
+ * (not sRGB!) which preserves luminance correctly. Also:
+ *   - Snaps near-white pixels to pure white (prevents JPEG grey tint from
+ *     stealing matches to pale-grey palette entries)
+ *   - Snaps near-black pixels to pure black
+ *   - Optional saturation boost for more vivid bead output
  */
 export function downsampleImage(
   img: HTMLImageElement,
   gridWidth: number,
   gridHeight: number,
-  options: { saturationBoost?: number } = {},
+  options: { saturationBoost?: number; snapExtremes?: boolean } = {},
 ): [number, number, number][][] {
-  // First render source at its natural size on a canvas
   const srcCanvas = document.createElement("canvas");
   const srcW = img.naturalWidth || img.width;
   const srcH = img.naturalHeight || img.height;
@@ -39,9 +40,9 @@ export function downsampleImage(
   srcCtx.drawImage(img, 0, 0);
   const srcData = srcCtx.getImageData(0, 0, srcW, srcH).data;
 
+  const snap = options.snapExtremes ?? true;
   const pixels: [number, number, number][][] = [];
 
-  // Area-averaging box filter in linear RGB
   for (let gy = 0; gy < gridHeight; gy++) {
     pixels[gy] = [];
     const y0 = Math.floor((gy * srcH) / gridHeight);
@@ -65,19 +66,29 @@ export function downsampleImage(
       }
 
       if (count === 0) count = 1;
-      const avgR = sumR / count;
-      const avgG = sumG / count;
-      const avgB = sumB / count;
+      let r = linearToSrgb(sumR / count);
+      let g = linearToSrgb(sumG / count);
+      let b = linearToSrgb(sumB / count);
 
-      pixels[gy][gx] = [
-        linearToSrgb(avgR),
-        linearToSrgb(avgG),
-        linearToSrgb(avgB),
-      ];
+      // Snap near-white / near-black pixels that are close to neutral.
+      // This prevents a JPEG background that reads as (248, 249, 247)
+      // from matching to a pale-grey palette entry instead of pure white.
+      if (snap) {
+        const mn = Math.min(r, g, b);
+        const mx = Math.max(r, g, b);
+        const chroma = mx - mn;
+        if (mn >= 240 && chroma <= 12) {
+          r = g = b = 255;
+        } else if (mx <= 15 && chroma <= 12) {
+          r = g = b = 0;
+        }
+      }
 
       if (options.saturationBoost && options.saturationBoost !== 1) {
-        pixels[gy][gx] = applySaturation(pixels[gy][gx], options.saturationBoost);
+        [r, g, b] = applySaturation([r, g, b], options.saturationBoost);
       }
+
+      pixels[gy][gx] = [r, g, b];
     }
   }
 
@@ -89,7 +100,6 @@ function applySaturation(
   factor: number,
 ): [number, number, number] {
   const [r, g, b] = rgb;
-  // Rec. 709 luma
   const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   return [
     clamp(luma + (r - luma) * factor),
@@ -107,4 +117,30 @@ export function mirrorPixelGrid(
   pixels: [number, number, number][][],
 ): [number, number, number][][] {
   return pixels.map((row) => [...row].reverse());
+}
+
+/**
+ * Suggest a grid size that preserves the image's aspect ratio,
+ * using the given short-side target. Clamped to [5, 200].
+ */
+export function suggestGridSize(
+  img: HTMLImageElement,
+  shortSideTarget = 58,
+): { width: number; height: number } {
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  if (w <= 0 || h <= 0) {
+    return { width: shortSideTarget, height: shortSideTarget };
+  }
+  let width: number, height: number;
+  if (w <= h) {
+    width = shortSideTarget;
+    height = Math.round((shortSideTarget * h) / w);
+  } else {
+    height = shortSideTarget;
+    width = Math.round((shortSideTarget * w) / h);
+  }
+  width = Math.max(5, Math.min(200, width));
+  height = Math.max(5, Math.min(200, height));
+  return { width, height };
 }

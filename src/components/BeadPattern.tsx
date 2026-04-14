@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useEffect, MouseEvent } from "react";
+import { useRef, useEffect, MouseEvent, useState } from "react";
 import { BeadPattern as BeadPatternType, BeadColor } from "@/types";
-import { renderPatternToCanvas } from "@/lib/renderPattern";
+import { renderPatternToCanvas, BeadShape } from "@/lib/renderPattern";
 import { useI18n } from "@/i18n/I18nProvider";
 
 interface BeadPatternProps {
@@ -23,13 +23,16 @@ export default function BeadPattern({
   const containerRef = useRef<HTMLDivElement>(null);
   const cellSizeRef = useRef(16);
 
+  const [shape, setShape] = useState<BeadShape>("circle");
+  const [showLabels, setShowLabels] = useState(false);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !pattern) return;
 
     const containerWidth = containerRef.current?.clientWidth ?? 600;
     const maxCellSize = Math.floor((containerWidth - 16) / pattern.width);
-    const cs = Math.max(6, Math.min(30, maxCellSize));
+    const cs = Math.max(6, Math.min(32, maxCellSize));
     cellSizeRef.current = cs;
 
     canvas.width = pattern.width * cs;
@@ -38,10 +41,12 @@ export default function BeadPattern({
     const ctx = canvas.getContext("2d")!;
     renderPatternToCanvas(ctx, pattern, {
       cellSize: cs,
-      showGridLines: true,
-      showColorCodes: cs >= 14,
+      shape,
+      showGridLines: shape === "square",
+      showColorCodes: showLabels,
+      background: "#FFFFFF",
     });
-  }, [pattern]);
+  }, [pattern, shape, showLabels]);
 
   function handleClick(e: MouseEvent<HTMLCanvasElement>) {
     if (!pattern || editMode === "none" || !onCellClick) return;
@@ -71,15 +76,55 @@ export default function BeadPattern({
       ref={containerRef}
       className="bg-white rounded-3xl border-4 border-pink-200 p-4 shadow-lg"
     >
-      <h3 className="text-sm font-bold text-pink-500 mb-2 flex items-center gap-1">
-        🎨 {t("preview.pattern")}
-      </h3>
+      <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+        <h3 className="text-sm font-bold text-pink-500 flex items-center gap-1">
+          🎨 {t("preview.pattern")}
+        </h3>
+        {pattern && (
+          <div className="flex items-center gap-2 text-xs">
+            <div className="inline-flex rounded-full bg-pink-50 p-0.5">
+              <button
+                onClick={() => setShape("circle")}
+                className={`px-2.5 py-1 rounded-full font-bold transition-all ${
+                  shape === "circle"
+                    ? "bg-pink-400 text-white shadow"
+                    : "text-pink-500 hover:bg-pink-100"
+                }`}
+                title={t("preview.shape.circle")}
+              >
+                ⚪ {t("preview.shape.circle")}
+              </button>
+              <button
+                onClick={() => setShape("square")}
+                className={`px-2.5 py-1 rounded-full font-bold transition-all ${
+                  shape === "square"
+                    ? "bg-pink-400 text-white shadow"
+                    : "text-pink-500 hover:bg-pink-100"
+                }`}
+                title={t("preview.shape.square")}
+              >
+                ⬜ {t("preview.shape.square")}
+              </button>
+            </div>
+            <label className="flex items-center gap-1 text-pink-500 font-bold cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={showLabels}
+                onChange={(e) => setShowLabels(e.target.checked)}
+                className="w-3.5 h-3.5 rounded accent-pink-400"
+              />
+              {t("preview.labels")}
+            </label>
+          </div>
+        )}
+      </div>
+
       {pattern ? (
-        <div className="overflow-auto max-h-[500px] rounded-2xl bg-gradient-to-br from-pink-50 to-purple-50 p-2">
+        <div className="overflow-auto max-h-[600px] rounded-2xl bg-gradient-to-br from-pink-50 to-purple-50 p-2">
           <canvas
             ref={canvasRef}
             onClick={handleClick}
-            style={{ cursor, imageRendering: "pixelated" }}
+            style={{ cursor, imageRendering: "auto" }}
             className="rounded-xl"
           />
         </div>

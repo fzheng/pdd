@@ -32,6 +32,9 @@ export type TranslationKey =
   | "preview.uploadPrompt"
   | "preview.patternPrompt"
   | "preview.comparison"
+  | "preview.shape.circle"
+  | "preview.shape.square"
+  | "preview.labels"
   | "editor.undo"
   | "editor.redo"
   | "editor.brush"
@@ -90,6 +93,9 @@ const zhCN: Dict = {
   "preview.uploadPrompt": "上传一张图片开始吧～",
   "preview.patternPrompt": "图纸会显示在这里 🎨",
   "preview.comparison": "对比滑块",
+  "preview.shape.circle": "圆豆",
+  "preview.shape.square": "方格",
+  "preview.labels": "显示编号",
   "editor.undo": "撤销",
   "editor.redo": "重做",
   "editor.brush": "画笔",
@@ -147,6 +153,9 @@ const zhTW: Dict = {
   "preview.uploadPrompt": "上傳一張圖片開始吧～",
   "preview.patternPrompt": "圖紙會顯示在這裡 🎨",
   "preview.comparison": "對比滑桿",
+  "preview.shape.circle": "圓豆",
+  "preview.shape.square": "方格",
+  "preview.labels": "顯示編號",
   "editor.undo": "復原",
   "editor.redo": "重做",
   "editor.brush": "畫筆",
@@ -204,6 +213,9 @@ const en: Dict = {
   "preview.uploadPrompt": "Upload a photo to start ~",
   "preview.patternPrompt": "Your pattern will appear here 🎨",
   "preview.comparison": "Slide to compare",
+  "preview.shape.circle": "Beads",
+  "preview.shape.square": "Grid",
+  "preview.labels": "Show SKU",
   "editor.undo": "Undo",
   "editor.redo": "Redo",
   "editor.brush": "Brush",

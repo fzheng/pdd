@@ -3,7 +3,7 @@ import { BeadPalette } from "@/types";
 export const hamaPalette: BeadPalette = {
   brand: "Hama",
   colors: [
-    { id: "hama-H01", name: "White", brand: "Hama", sku: "H01", hex: "#F5F5F5", rgb: [245, 245, 245] },
+    { id: "hama-H01", name: "White", brand: "Hama", sku: "H01", hex: "#FFFFFF", rgb: [255, 255, 255] },
     { id: "hama-H02", name: "Cream", brand: "Hama", sku: "H02", hex: "#F2E6C9", rgb: [242, 230, 201] },
     { id: "hama-H03", name: "Yellow", brand: "Hama", sku: "H03", hex: "#F8E81C", rgb: [248, 232, 28] },
     { id: "hama-H04", name: "Orange", brand: "Hama", sku: "H04", hex: "#F38020", rgb: [243, 128, 32] },
