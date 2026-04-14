@@ -20,12 +20,14 @@ export function loadImage(file: File): Promise<HTMLImageElement> {
 /**
  * Gamma-correct downsampling. Averages source pixel blocks in linear RGB
  * (not sRGB!) which preserves luminance correctly. Also:
- *   - Composites the source onto an opaque background color before averaging
- *     (defaults to white). This flattens transparent PNGs to a clean solid
- *     background and prevents anti-aliased edge pixels from producing noise
- *     in mostly-transparent blocks.
- *   - Snaps near-white pixels to pure white (prevents JPEG grey tint from
- *     stealing matches to pale-grey palette entries)
+ *   - Composites the source onto an opaque background color (default white)
+ *     so transparent PNGs produce a clean uniform background
+ *   - Uses the ORIGINAL alpha channel to detect "mostly transparent" blocks
+ *     and forces them to the background color. Without this step, the wide
+ *     anti-aliasing halo around a transparent PNG's subject bleeds into
+ *     scattered pale-pink / pale-grey beads because the composited color
+ *     is a faintly tinted near-white that matches ambiguous palette entries.
+ *   - Snaps near-white pixels to pure white
  *   - Snaps near-black pixels to pure black
  *   - Optional saturation boost for more vivid bead output
  */
@@ -38,24 +40,36 @@ export function downsampleImage(
     snapExtremes?: boolean;
     /** Background color for transparent source pixels. Defaults to white. */
     backgroundColor?: [number, number, number];
+    /**
+     * If a block's mean source alpha is below this fraction, force it to
+     * the background color. 0 disables the check; 0.5 means blocks that
+     * were more than half-transparent become uniform background.
+     */
+    alphaThreshold?: number;
   } = {},
 ): [number, number, number][][] {
-  const srcCanvas = document.createElement("canvas");
   const srcW = img.naturalWidth || img.width;
   const srcH = img.naturalHeight || img.height;
-  srcCanvas.width = srcW;
-  srcCanvas.height = srcH;
-  const srcCtx = srcCanvas.getContext("2d")!;
-
-  // Fill opaque background, then composite the image on top. After this,
-  // every pixel in the canvas has alpha=255. Transparent regions of the
-  // source become the chosen background color (default white), and
-  // semi-transparent anti-aliased edges blend against it smoothly.
   const [bgR, bgG, bgB] = options.backgroundColor ?? [255, 255, 255];
-  srcCtx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`;
-  srcCtx.fillRect(0, 0, srcW, srcH);
-  srcCtx.drawImage(img, 0, 0);
-  const srcData = srcCtx.getImageData(0, 0, srcW, srcH).data;
+  const alphaThreshold = options.alphaThreshold ?? 0.5;
+
+  // Canvas 1: composite onto opaque background for color data.
+  const colorCanvas = document.createElement("canvas");
+  colorCanvas.width = srcW;
+  colorCanvas.height = srcH;
+  const colorCtx = colorCanvas.getContext("2d")!;
+  colorCtx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`;
+  colorCtx.fillRect(0, 0, srcW, srcH);
+  colorCtx.drawImage(img, 0, 0);
+  const colorData = colorCtx.getImageData(0, 0, srcW, srcH).data;
+
+  // Canvas 2: raw draw to preserve original alpha channel for classification.
+  const alphaCanvas = document.createElement("canvas");
+  alphaCanvas.width = srcW;
+  alphaCanvas.height = srcH;
+  const alphaCtx = alphaCanvas.getContext("2d")!;
+  alphaCtx.drawImage(img, 0, 0);
+  const alphaData = alphaCtx.getImageData(0, 0, srcW, srcH).data;
 
   const snap = options.snapExtremes ?? true;
   const pixels: [number, number, number][][] = [];
@@ -69,17 +83,34 @@ export function downsampleImage(
       const x0 = Math.floor((gx * srcW) / gridWidth);
       const x1 = Math.max(x0 + 1, Math.floor(((gx + 1) * srcW) / gridWidth));
 
-      // Box-filter average in linear RGB. All source pixels are opaque now
-      // thanks to the background fill above, so every pixel contributes
-      // equally (no alpha weighting needed — it would all be 1.0).
-      let sumR = 0, sumG = 0, sumB = 0, count = 0;
-
+      // First pass: measure the block's opacity from the source alpha.
+      let sumAlpha = 0;
+      let pxCount = 0;
       for (let y = y0; y < y1; y++) {
         for (let x = x0; x < x1; x++) {
           const i = (y * srcW + x) * 4;
-          sumR += srgbToLinear(srcData[i]);
-          sumG += srgbToLinear(srcData[i + 1]);
-          sumB += srgbToLinear(srcData[i + 2]);
+          sumAlpha += alphaData[i + 3];
+          pxCount++;
+        }
+      }
+      const meanAlpha = pxCount === 0 ? 0 : sumAlpha / (pxCount * 255);
+
+      // Mostly-transparent blocks snap straight to the background color.
+      // Skips color averaging entirely — no halo from faint edge pixels.
+      if (alphaThreshold > 0 && meanAlpha < alphaThreshold) {
+        pixels[gy][gx] = [bgR, bgG, bgB];
+        continue;
+      }
+
+      // Second pass: gamma-correct box-filter average in linear RGB
+      // over the composited (opaque) color data.
+      let sumR = 0, sumG = 0, sumB = 0, count = 0;
+      for (let y = y0; y < y1; y++) {
+        for (let x = x0; x < x1; x++) {
+          const i = (y * srcW + x) * 4;
+          sumR += srgbToLinear(colorData[i]);
+          sumG += srgbToLinear(colorData[i + 1]);
+          sumB += srgbToLinear(colorData[i + 2]);
           count++;
         }
       }
@@ -90,8 +121,6 @@ export function downsampleImage(
       let b = linearToSrgb(sumB / count);
 
       // Snap near-white / near-black pixels that are close to neutral.
-      // This prevents a JPEG background that reads as (248, 249, 247)
-      // from matching to a pale-grey palette entry instead of pure white.
       if (snap) {
         const mn = Math.min(r, g, b);
         const mx = Math.max(r, g, b);
