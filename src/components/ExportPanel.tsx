@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { BeadPattern } from "@/types";
 import { exportPatternAsPng } from "@/lib/exportPng";
-import { exportPatternAsPdf } from "@/lib/exportPdf";
+import { exportPatternAsPdf, PdfLabels } from "@/lib/exportPdf";
 import { useI18n } from "@/i18n/I18nProvider";
+
+const PEGBOARD = 29;
 
 interface ExportPanelProps {
   pattern: BeadPattern | null;
@@ -21,7 +23,11 @@ export default function ExportPanel({ pattern }: ExportPanelProps) {
     if (!pattern) return;
     setBusy("png");
     try {
-      exportPatternAsPng(pattern, `bead-pattern-${pattern.width}x${pattern.height}.png`, 24);
+      exportPatternAsPng(
+        pattern,
+        `bead-pattern-${pattern.width}x${pattern.height}.png`,
+        28,
+      );
     } finally {
       setBusy(null);
     }
@@ -31,11 +37,41 @@ export default function ExportPanel({ pattern }: ExportPanelProps) {
     if (!pattern) return;
     setBusy("pdf");
     try {
-      // Defer to next frame to let the button repaint as "busy"
       await new Promise((r) => requestAnimationFrame(() => r(null)));
+
+      const total = Array.from(pattern.colorCounts.values()).reduce(
+        (s, e) => s + e.count,
+        0,
+      );
+      const colsOfBoards = Math.ceil(pattern.width / PEGBOARD);
+      const rowsOfBoards = Math.ceil(pattern.height / PEGBOARD);
+
+      const labels: PdfLabels = {
+        size: t("pdf.size", { w: pattern.width, h: pattern.height }),
+        totalBeads: t("pdf.totalBeads", { n: total }),
+        colorsCount: t("pdf.colorsCount", { n: pattern.colorCounts.size }),
+        pegboards: t("pdf.pegboards", {
+          size: PEGBOARD,
+          cols: colsOfBoards,
+          rows: rowsOfBoards,
+        }),
+        shoppingList: t("pdf.shoppingList"),
+        colSwatch: t("pdf.col.swatch"),
+        colName: t("pdf.col.name"),
+        colSku: t("pdf.col.sku"),
+        colBrand: t("pdf.col.brand"),
+        colCount: t("pdf.col.count"),
+        boardOf: (r, c, rows, cols) =>
+          t("pdf.boardOf", { r: r + 1, c: c + 1, rows, cols }),
+        beadRange: (x0, x1, y0, y1) =>
+          t("pdf.beadRange", { x0: x0 + 1, x1, y0: y0 + 1, y1 }),
+        footer: t("footer.madeWith"),
+      };
+
       exportPatternAsPdf(pattern, {
         cellSizeMm,
         fileName: `bead-pattern-${pattern.width}x${pattern.height}.pdf`,
+        labels,
       });
     } finally {
       setBusy(null);

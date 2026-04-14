@@ -54,6 +54,19 @@ export type TranslationKey =
   | "export.title"
   | "export.generating"
   | "export.cellSize"
+  | "pdf.size"
+  | "pdf.totalBeads"
+  | "pdf.colorsCount"
+  | "pdf.pegboards"
+  | "pdf.shoppingList"
+  | "pdf.col.swatch"
+  | "pdf.col.name"
+  | "pdf.col.sku"
+  | "pdf.col.brand"
+  | "pdf.col.count"
+  | "pdf.board"
+  | "pdf.boardOf"
+  | "pdf.beadRange"
   | "footer.madeWith"
   | "lang.en"
   | "lang.zhCN"
@@ -115,6 +128,19 @@ const zhCN: Dict = {
   "export.title": "导出",
   "export.generating": "导出中…",
   "export.cellSize": "每格毫米数",
+  "pdf.size": "尺寸：{w} × {h} 颗豆豆",
+  "pdf.totalBeads": "总豆数：{n}",
+  "pdf.colorsCount": "颜色数：{n}",
+  "pdf.pegboards": "拼豆板（{size}×{size}）：{cols} × {rows}",
+  "pdf.shoppingList": "🛒 豆豆采购清单",
+  "pdf.col.swatch": "颜色",
+  "pdf.col.name": "名称",
+  "pdf.col.sku": "编号",
+  "pdf.col.brand": "品牌",
+  "pdf.col.count": "数量",
+  "pdf.board": "板",
+  "pdf.boardOf": "第 {r}-{c} 块 / 共 {rows}×{cols}",
+  "pdf.beadRange": "豆豆范围：列 {x0}–{x1}，行 {y0}–{y1}",
   "footer.madeWith": "用 ❤️ 做出来",
   "lang.en": "English",
   "lang.zhCN": "简体中文",
@@ -175,6 +201,19 @@ const zhTW: Dict = {
   "export.title": "匯出",
   "export.generating": "匯出中…",
   "export.cellSize": "每格毫米數",
+  "pdf.size": "尺寸：{w} × {h} 顆豆豆",
+  "pdf.totalBeads": "總豆數：{n}",
+  "pdf.colorsCount": "顏色數：{n}",
+  "pdf.pegboards": "拼豆板（{size}×{size}）：{cols} × {rows}",
+  "pdf.shoppingList": "🛒 豆豆採購清單",
+  "pdf.col.swatch": "顏色",
+  "pdf.col.name": "名稱",
+  "pdf.col.sku": "編號",
+  "pdf.col.brand": "品牌",
+  "pdf.col.count": "數量",
+  "pdf.board": "板",
+  "pdf.boardOf": "第 {r}-{c} 塊 / 共 {rows}×{cols}",
+  "pdf.beadRange": "豆豆範圍：列 {x0}–{x1}，行 {y0}–{y1}",
   "footer.madeWith": "用 ❤️ 做出來",
   "lang.en": "English",
   "lang.zhCN": "简体中文",
@@ -235,6 +274,19 @@ const en: Dict = {
   "export.title": "Export",
   "export.generating": "Exporting…",
   "export.cellSize": "mm per bead",
+  "pdf.size": "Size: {w} × {h} beads",
+  "pdf.totalBeads": "Total beads: {n}",
+  "pdf.colorsCount": "Colors: {n}",
+  "pdf.pegboards": "Pegboards ({size}×{size}): {cols} × {rows}",
+  "pdf.shoppingList": "🛒 Shopping List",
+  "pdf.col.swatch": "Color",
+  "pdf.col.name": "Name",
+  "pdf.col.sku": "SKU",
+  "pdf.col.brand": "Brand",
+  "pdf.col.count": "Count",
+  "pdf.board": "Board",
+  "pdf.boardOf": "Board {r}-{c} of {rows}×{cols}",
+  "pdf.beadRange": "Bead range: cols {x0}–{x1}, rows {y0}–{y1}",
   "footer.madeWith": "Made with ❤️",
   "lang.en": "English",
   "lang.zhCN": "简体中文",
