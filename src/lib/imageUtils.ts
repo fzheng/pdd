@@ -20,6 +20,10 @@ export function loadImage(file: File): Promise<HTMLImageElement> {
 /**
  * Gamma-correct downsampling. Averages source pixel blocks in linear RGB
  * (not sRGB!) which preserves luminance correctly. Also:
+ *   - Composites the source onto an opaque background color before averaging
+ *     (defaults to white). This flattens transparent PNGs to a clean solid
+ *     background and prevents anti-aliased edge pixels from producing noise
+ *     in mostly-transparent blocks.
  *   - Snaps near-white pixels to pure white (prevents JPEG grey tint from
  *     stealing matches to pale-grey palette entries)
  *   - Snaps near-black pixels to pure black
@@ -29,7 +33,12 @@ export function downsampleImage(
   img: HTMLImageElement,
   gridWidth: number,
   gridHeight: number,
-  options: { saturationBoost?: number; snapExtremes?: boolean } = {},
+  options: {
+    saturationBoost?: number;
+    snapExtremes?: boolean;
+    /** Background color for transparent source pixels. Defaults to white. */
+    backgroundColor?: [number, number, number];
+  } = {},
 ): [number, number, number][][] {
   const srcCanvas = document.createElement("canvas");
   const srcW = img.naturalWidth || img.width;
@@ -37,6 +46,14 @@ export function downsampleImage(
   srcCanvas.width = srcW;
   srcCanvas.height = srcH;
   const srcCtx = srcCanvas.getContext("2d")!;
+
+  // Fill opaque background, then composite the image on top. After this,
+  // every pixel in the canvas has alpha=255. Transparent regions of the
+  // source become the chosen background color (default white), and
+  // semi-transparent anti-aliased edges blend against it smoothly.
+  const [bgR, bgG, bgB] = options.backgroundColor ?? [255, 255, 255];
+  srcCtx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`;
+  srcCtx.fillRect(0, 0, srcW, srcH);
   srcCtx.drawImage(img, 0, 0);
   const srcData = srcCtx.getImageData(0, 0, srcW, srcH).data;
 
@@ -52,16 +69,18 @@ export function downsampleImage(
       const x0 = Math.floor((gx * srcW) / gridWidth);
       const x1 = Math.max(x0 + 1, Math.floor(((gx + 1) * srcW) / gridWidth));
 
+      // Box-filter average in linear RGB. All source pixels are opaque now
+      // thanks to the background fill above, so every pixel contributes
+      // equally (no alpha weighting needed — it would all be 1.0).
       let sumR = 0, sumG = 0, sumB = 0, count = 0;
 
       for (let y = y0; y < y1; y++) {
         for (let x = x0; x < x1; x++) {
           const i = (y * srcW + x) * 4;
-          const a = srcData[i + 3] / 255;
-          sumR += srgbToLinear(srcData[i]) * a;
-          sumG += srgbToLinear(srcData[i + 1]) * a;
-          sumB += srgbToLinear(srcData[i + 2]) * a;
-          count += a;
+          sumR += srgbToLinear(srcData[i]);
+          sumG += srgbToLinear(srcData[i + 1]);
+          sumB += srgbToLinear(srcData[i + 2]);
+          count++;
         }
       }
 
