@@ -1,0 +1,38 @@
+import { BeadPalette } from "@/types";
+
+// Nabbi ~30 color palette.
+export const nabbiPalette: BeadPalette = {
+  brand: "Nabbi",
+  colors: [
+    { id: "nabbi-N01", name: "White", brand: "Nabbi", sku: "N01", hex: "#FFFFFF", rgb: [255, 255, 255] },
+    { id: "nabbi-N02", name: "Yellow", brand: "Nabbi", sku: "N02", hex: "#F9DC24", rgb: [249, 220, 36] },
+    { id: "nabbi-N03", name: "Orange", brand: "Nabbi", sku: "N03", hex: "#F49A1A", rgb: [244, 154, 26] },
+    { id: "nabbi-N04", name: "Light Red", brand: "Nabbi", sku: "N04", hex: "#E83E34", rgb: [232, 62, 52] },
+    { id: "nabbi-N05", name: "Red", brand: "Nabbi", sku: "N05", hex: "#B61C23", rgb: [182, 28, 35] },
+    { id: "nabbi-N06", name: "Pink", brand: "Nabbi", sku: "N06", hex: "#F29CB4", rgb: [242, 156, 180] },
+    { id: "nabbi-N07", name: "Dark Pink", brand: "Nabbi", sku: "N07", hex: "#D84A83", rgb: [216, 74, 131] },
+    { id: "nabbi-N08", name: "Purple", brand: "Nabbi", sku: "N08", hex: "#693B8A", rgb: [105, 59, 138] },
+    { id: "nabbi-N09", name: "Light Purple", brand: "Nabbi", sku: "N09", hex: "#B48ABC", rgb: [180, 138, 188] },
+    { id: "nabbi-N10", name: "Dark Blue", brand: "Nabbi", sku: "N10", hex: "#1E3F8B", rgb: [30, 63, 139] },
+    { id: "nabbi-N11", name: "Blue", brand: "Nabbi", sku: "N11", hex: "#2E5FAD", rgb: [46, 95, 173] },
+    { id: "nabbi-N12", name: "Light Blue", brand: "Nabbi", sku: "N12", hex: "#4AAFDD", rgb: [74, 175, 221] },
+    { id: "nabbi-N13", name: "Turquoise", brand: "Nabbi", sku: "N13", hex: "#00A7AA", rgb: [0, 167, 170] },
+    { id: "nabbi-N14", name: "Dark Green", brand: "Nabbi", sku: "N14", hex: "#00783E", rgb: [0, 120, 62] },
+    { id: "nabbi-N15", name: "Green", brand: "Nabbi", sku: "N15", hex: "#3DA63D", rgb: [61, 166, 61] },
+    { id: "nabbi-N16", name: "Light Green", brand: "Nabbi", sku: "N16", hex: "#90C645", rgb: [144, 198, 69] },
+    { id: "nabbi-N17", name: "Mint", brand: "Nabbi", sku: "N17", hex: "#B8DCB5", rgb: [184, 220, 181] },
+    { id: "nabbi-N18", name: "Brown", brand: "Nabbi", sku: "N18", hex: "#5E3A1D", rgb: [94, 58, 29] },
+    { id: "nabbi-N19", name: "Light Brown", brand: "Nabbi", sku: "N19", hex: "#9E6B35", rgb: [158, 107, 53] },
+    { id: "nabbi-N20", name: "Tan", brand: "Nabbi", sku: "N20", hex: "#D8B88C", rgb: [216, 184, 140] },
+    { id: "nabbi-N21", name: "Peach", brand: "Nabbi", sku: "N21", hex: "#F6C9A8", rgb: [246, 201, 168] },
+    { id: "nabbi-N22", name: "Cream", brand: "Nabbi", sku: "N22", hex: "#F7E8C2", rgb: [247, 232, 194] },
+    { id: "nabbi-N23", name: "Grey", brand: "Nabbi", sku: "N23", hex: "#8F8F8F", rgb: [143, 143, 143] },
+    { id: "nabbi-N24", name: "Light Grey", brand: "Nabbi", sku: "N24", hex: "#C8C8C8", rgb: [200, 200, 200] },
+    { id: "nabbi-N25", name: "Dark Grey", brand: "Nabbi", sku: "N25", hex: "#555555", rgb: [85, 85, 85] },
+    { id: "nabbi-N26", name: "Black", brand: "Nabbi", sku: "N26", hex: "#222222", rgb: [34, 34, 34] },
+    { id: "nabbi-N27", name: "Neon Yellow", brand: "Nabbi", sku: "N27", hex: "#F3FF00", rgb: [243, 255, 0] },
+    { id: "nabbi-N28", name: "Neon Orange", brand: "Nabbi", sku: "N28", hex: "#FF6B00", rgb: [255, 107, 0] },
+    { id: "nabbi-N29", name: "Neon Pink", brand: "Nabbi", sku: "N29", hex: "#FF3EA5", rgb: [255, 62, 165] },
+    { id: "nabbi-N30", name: "Neon Green", brand: "Nabbi", sku: "N30", hex: "#39FF14", rgb: [57, 255, 20] },
+  ],
+};
