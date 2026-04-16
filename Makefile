@@ -36,8 +36,8 @@ dev: ## Run the Next.js dev server (hot reload)
 build: ## Production build (./next build)
 	npm run build
 
-start: ## Start the production server — binds 0.0.0.0:$$PORT (Railway-friendly)
-	npm run start
+start: ## Start the production server (default port 3000; override with PORT=8080)
+	npx next start --hostname 0.0.0.0 --port $${PORT:-3000}
 
 lint: ## Run ESLint
 	npm run lint
