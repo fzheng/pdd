@@ -3,9 +3,9 @@ import "./globals.css";
 import { I18nProvider } from "@/i18n/I18nProvider";
 
 export const metadata: Metadata = {
-  title: "拼豆图纸生成器 · Perler Bead Pattern Maker",
+  title: "豆P · BeadSnap",
   description:
-    "把你的照片变成可爱的拼豆图纸。Turn your photos into adorable perler bead patterns.",
+    "豆P (BeadSnap)：P 一张照片，自动生成可直接拼的拼豆图纸。Snap a photo, get a bead pattern you can actually build.",
 };
 
 export default function RootLayout({

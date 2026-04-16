@@ -34,8 +34,7 @@ export function generatePattern(
   settings: PipelineSettings,
 ): BeadPattern {
   const {
-    gridWidth,
-    gridHeight,
+    gridSize,
     palette,
     algorithm,
     dithering,
@@ -46,7 +45,7 @@ export function generatePattern(
   } = settings;
 
   // 1. Downsample image (gamma-correct, optional saturation)
-  let pixelData = downsampleImage(img, gridWidth, gridHeight, {
+  let pixelData = downsampleImage(img, gridSize, gridSize, {
     saturationBoost: saturation,
     alphaThreshold: 0.65,
   });

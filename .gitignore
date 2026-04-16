@@ -21,8 +21,25 @@
 /build
 
 # misc
-.DS_Store
 *.pem
+
+# system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# claude
+.claude/
+.claude.json
+CLAUDE.local.md
 
 # debug
 npm-debug.log*

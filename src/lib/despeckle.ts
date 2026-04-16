@@ -1,10 +1,18 @@
-import { BeadColor, BeadPattern } from "@/types";
+import { BeadColor, BeadPattern, LabColor } from "@/types";
+import { rgbToLab } from "./colorConvert";
 import { buildPatternFromCells } from "./pipeline";
 
 export interface DespeckleOptions {
   /** Components smaller than this many cells are candidates for removal. */
   threshold: number;
 }
+
+/**
+ * Max CIELAB ΔE² for a palette color to be considered "background-like".
+ * ~8 ΔE in perceptual terms — covers White, Mist, Light Grey, Cream etc.
+ * that all look like "the white background" to a human eye.
+ */
+const BG_DELTA_E_SQ = 8 * 8;
 
 /**
  * Remove small isolated non-background components that sit in the
@@ -36,7 +44,12 @@ export function despecklePattern(
   const h = pattern.height;
   if (w === 0 || h === 0) return pattern;
 
-  // 1. Identify background color
+  // 1. Identify background color (most common bead) and precompute a set
+  //    of "background-like" color IDs. Using perceptual CIELAB distance
+  //    instead of exact-ID matches is the key fix: transparent-PNG halos
+  //    often quantize to Mist / Light Grey / Cream, all of which are
+  //    perceptually close to White and should be treated as the same
+  //    exterior background.
   let bgColor: BeadColor | null = null;
   let maxCount = 0;
   for (const entry of pattern.colorCounts.values()) {
@@ -46,17 +59,33 @@ export function despecklePattern(
     }
   }
   if (!bgColor) return pattern;
-  const bgId = bgColor.id;
 
+  const bgLab: LabColor = rgbToLab(bgColor.rgb[0], bgColor.rgb[1], bgColor.rgb[2]);
+  const bgLikeIds = new Set<string>();
+  for (const entry of pattern.colorCounts.values()) {
+    const lab = rgbToLab(
+      entry.color.rgb[0],
+      entry.color.rgb[1],
+      entry.color.rgb[2],
+    );
+    const dL = bgLab.L - lab.L;
+    const da = bgLab.a - lab.a;
+    const db = bgLab.b - lab.b;
+    if (dL * dL + da * da + db * db <= BG_DELTA_E_SQ) {
+      bgLikeIds.add(entry.color.id);
+    }
+  }
+
+  const isBg = (c: BeadColor) => bgLikeIds.has(c.id);
   const cellAt = (y: number, x: number) => pattern.cells[y][x].beadColor;
   const idx = (y: number, x: number) => y * w + x;
 
-  // 2. Flood-fill exterior from every border cell whose color is bg.
+  // 2. Flood-fill exterior from every border cell whose color is bg-like.
   const exterior = new Uint8Array(w * h);
   const queue: number[] = [];
 
   const seedBorder = (y: number, x: number) => {
-    if (cellAt(y, x).id === bgId) {
+    if (isBg(cellAt(y, x))) {
       const i = idx(y, x);
       if (!exterior[i]) {
         exterior[i] = 1;
@@ -83,7 +112,7 @@ export function despecklePattern(
       if (ny < 0 || ny >= h || nx < 0 || nx >= w) continue;
       const ni = idx(ny, nx);
       if (exterior[ni]) continue;
-      if (cellAt(ny, nx).id !== bgId) continue;
+      if (!isBg(cellAt(ny, nx))) continue;
       exterior[ni] = 1;
       queue.push(ni);
     }
@@ -101,7 +130,7 @@ export function despecklePattern(
       if (visited[i]) continue;
       const color = cellAt(y, x);
       visited[i] = 1;
-      if (color.id === bgId) continue;
+      if (isBg(color)) continue;
 
       // BFS the component
       const compQueue: number[] = [i];
@@ -125,8 +154,6 @@ export function despecklePattern(
               compQueue.push(ni);
             }
           } else if (!exterior[ni]) {
-            // boundary neighbor that is not exterior → component is
-            // adjacent to the main subject; protect it.
             allBoundaryExterior = false;
           }
         }

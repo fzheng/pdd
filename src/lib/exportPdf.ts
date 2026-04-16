@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { BeadPattern, PatternCell } from "@/types";
+import { BeadColor, BeadPattern, PatternCell } from "@/types";
 import { drawText } from "./pdfText";
 
 const PEGBOARD = 29;
@@ -27,17 +27,31 @@ export interface PdfLabels {
 }
 
 export interface PdfExportOptions {
-  cellSizeMm: number; // 0.1 – 10
+  cellSizeMm: number; // 0.1 – 10 — only used when splitByPegboard is true
   fileName: string;
   title?: string;
   showColorCodes?: boolean;
+  /**
+   * If true, emits one page per 29×29 pegboard section (for physical
+   * assembly). If false (default), renders the entire pattern on a single
+   * fit-to-page diagram.
+   */
+  splitByPegboard?: boolean;
+  /**
+   * Optional callback that localizes a bead-color name for display in the
+   * shopping list. Falls back to `color.name` when omitted.
+   */
+  nameForColor?: (color: BeadColor) => string;
   labels: PdfLabels;
 }
 
 /**
- * Export a bead pattern as a multi-page A4 PDF with:
- * - Cover page with overview + shopping list
- * - One page per 29×29 pegboard section with alignment info
+ * Export a bead pattern as a multi-page A4 PDF.
+ *
+ * - Cover page: overview + shopping list.
+ * - If `splitByPegboard` is true: one page per 29×29 pegboard section with
+ *   alignment info (useful for physical assembly on standard pegboards).
+ * - Otherwise: one page containing the full pattern, auto-scaled to fit A4.
  *
  * All human-readable text uses the provided `labels` so the PDF matches
  * the app's current locale (including CJK via canvas-rendered text).
@@ -46,36 +60,67 @@ export function exportPatternAsPdf(
   pattern: BeadPattern,
   options: PdfExportOptions,
 ): void {
-  const { cellSizeMm, fileName, title, showColorCodes = true, labels } = options;
+  const {
+    cellSizeMm,
+    fileName,
+    title,
+    showColorCodes = true,
+    splitByPegboard = false,
+    nameForColor = (c) => c.name,
+    labels,
+  } = options;
 
   const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 12;
 
-  renderCoverPage(doc, pattern, title ?? fileName, margin, pageW, pageH, labels);
+  renderCoverPage(
+    doc,
+    pattern,
+    title ?? fileName,
+    margin,
+    pageW,
+    pageH,
+    labels,
+    splitByPegboard,
+    nameForColor,
+  );
 
-  const colsOfBoards = Math.ceil(pattern.width / PEGBOARD);
-  const rowsOfBoards = Math.ceil(pattern.height / PEGBOARD);
+  if (splitByPegboard) {
+    const colsOfBoards = Math.ceil(pattern.width / PEGBOARD);
+    const rowsOfBoards = Math.ceil(pattern.height / PEGBOARD);
 
-  for (let br = 0; br < rowsOfBoards; br++) {
-    for (let bc = 0; bc < colsOfBoards; bc++) {
-      doc.addPage();
-      renderPegboardPage(
-        doc,
-        pattern,
-        br,
-        bc,
-        rowsOfBoards,
-        colsOfBoards,
-        cellSizeMm,
-        margin,
-        pageW,
-        pageH,
-        showColorCodes,
-        labels,
-      );
+    for (let br = 0; br < rowsOfBoards; br++) {
+      for (let bc = 0; bc < colsOfBoards; bc++) {
+        doc.addPage();
+        renderPegboardPage(
+          doc,
+          pattern,
+          br,
+          bc,
+          rowsOfBoards,
+          colsOfBoards,
+          cellSizeMm,
+          margin,
+          pageW,
+          pageH,
+          showColorCodes,
+          labels,
+        );
+      }
     }
+  } else {
+    doc.addPage();
+    renderSinglePatternPage(
+      doc,
+      pattern,
+      margin,
+      pageW,
+      pageH,
+      showColorCodes,
+      labels,
+    );
   }
 
   doc.save(fileName);
@@ -89,6 +134,8 @@ function renderCoverPage(
   pageW: number,
   pageH: number,
   labels: PdfLabels,
+  showPegboardCount: boolean,
+  nameForColor: (c: BeadColor) => string,
 ): void {
   let y = margin + 8;
 
@@ -110,11 +157,14 @@ function renderCoverPage(
   });
   y += 5;
 
-  drawText(doc, labels.pegboards, margin, y, {
-    fontSizePt: 10,
-    color: [100, 100, 100],
-  });
-  y += 6;
+  if (showPegboardCount) {
+    drawText(doc, labels.pegboards, margin, y, {
+      fontSizePt: 10,
+      color: [100, 100, 100],
+    });
+    y += 5;
+  }
+  y += 1;
 
   // Preview thumbnail
   const previewMaxW = Math.min(pageW - 2 * margin, 80);
@@ -184,7 +234,7 @@ function renderCoverPage(
     doc.setDrawColor(180);
     doc.rect(col1X, y - 3, 5, 5, "FD");
 
-    drawText(doc, color.name, col2X, y, { fontSizePt: 9 });
+    drawText(doc, nameForColor(color), col2X, y, { fontSizePt: 9 });
     drawText(doc, color.sku, col3X, y, { fontSizePt: 9 });
     drawText(doc, color.brand, col4X, y, { fontSizePt: 9 });
     drawText(doc, String(count), col5X, y, { fontSizePt: 9, align: "right" });
@@ -264,14 +314,16 @@ function renderPegboardPage(
       doc.setLineWidth(0.05);
       doc.rect(px, py, cs, cs, "FD");
 
-      if (showColorCodes && cs >= 4) {
+      if (showColorCodes && cs >= 3) {
         const luma = 0.299 * r + 0.587 * g + 0.114 * b;
         const textColor: [number, number, number] = luma > 140 ? [0, 0, 0] : [255, 255, 255];
-        // SKUs are ASCII — use native doc.text for speed
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(Math.max(4, cs * 1.8));
+        doc.setFontSize(Math.max(4, cs * 1.6));
         doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-        const label = cell.beadColor.sku.replace(/^[A-Z]+/, "").slice(-3);
+        // Strip every non-digit from the SKU so brands that use mixed
+        // alphanumeric codes ("P245", "H045B") still render a clean number.
+        const digits = cell.beadColor.sku.replace(/[^0-9]/g, "");
+        const label = cs < 4 ? digits.slice(-2) : digits.slice(-3);
         doc.text(label, px + cs / 2, py + cs / 2 + 0.3, {
           align: "center",
           baseline: "middle",
@@ -317,6 +369,98 @@ function renderPegboardPage(
   }
   if (boardRow > 0) {
     doc.text("^", startX + gridW / 2, startY - 2, { align: "center" });
+  }
+  doc.setTextColor(0);
+}
+
+/**
+ * Render the complete pattern on a single A4 page, auto-scaled to fit.
+ * Includes row/column edge labels and 29-cell pegboard dividers so users
+ * can still cross-reference against physical boards if they want to.
+ */
+function renderSinglePatternPage(
+  doc: jsPDF,
+  pattern: BeadPattern,
+  margin: number,
+  pageW: number,
+  pageH: number,
+  showColorCodes: boolean,
+  labels: PdfLabels,
+): void {
+  let y = margin + 5;
+
+  drawText(doc, labels.size, margin, y, { fontSizePt: 12, bold: true });
+  y += 7;
+
+  const edgeLabelPad = 4;
+  const usableW = pageW - 2 * margin - edgeLabelPad;
+  const usableH = pageH - y - margin - edgeLabelPad;
+  const cs = Math.min(usableW / pattern.width, usableH / pattern.height);
+
+  const gridW = cs * pattern.width;
+  const gridH = cs * pattern.height;
+  const startX = margin + edgeLabelPad;
+  const startY = y + edgeLabelPad;
+
+  for (let row = 0; row < pattern.height; row++) {
+    for (let col = 0; col < pattern.width; col++) {
+      const px = startX + col * cs;
+      const py = startY + row * cs;
+      const cell: PatternCell = pattern.cells[row][col];
+      const [r, g, b] = cell.beadColor.rgb;
+      doc.setFillColor(r, g, b);
+      doc.setDrawColor(200);
+      doc.setLineWidth(0.03);
+      doc.rect(px, py, cs, cs, "FD");
+
+      // Render the SKU code into each cell so crafters can actually
+      // assemble the pattern. The label length adapts to the cell size:
+      // below ~3mm (≈58×58 on A4) a 3-digit label wouldn't fit, so we
+      // drop to the last 2 digits — still enough for cross-reference
+      // against the shopping list on the cover page.
+      if (showColorCodes && cs >= 2.0) {
+        const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+        const textColor: [number, number, number] =
+          luma > 140 ? [0, 0, 0] : [255, 255, 255];
+        doc.setFont("helvetica", "normal");
+        // Font size in pt: 1mm ≈ 2.83pt. Use ~1.45mm text in a 3mm cell.
+        doc.setFontSize(Math.max(3, cs * 1.4));
+        doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+        const digits = cell.beadColor.sku.replace(/[^0-9]/g, "");
+        const label = cs < 3.2 ? digits.slice(-2) : digits.slice(-3);
+        doc.text(label, px + cs / 2, py + cs / 2 + 0.2, {
+          align: "center",
+          baseline: "middle",
+        });
+      }
+    }
+  }
+
+  // 29-bead pegboard dividers (visual reference only)
+  doc.setDrawColor(80);
+  doc.setLineWidth(0.25);
+  for (let x = PEGBOARD; x < pattern.width; x += PEGBOARD) {
+    doc.line(startX + x * cs, startY, startX + x * cs, startY + gridH);
+  }
+  for (let yy = PEGBOARD; yy < pattern.height; yy += PEGBOARD) {
+    doc.line(startX, startY + yy * cs, startX + gridW, startY + yy * cs);
+  }
+
+  // Edge labels every 5 cells
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(5);
+  doc.setTextColor(120);
+  const labelStep = Math.max(5, Math.round(5 / Math.max(cs, 0.5)) * 5);
+  for (let col = 0; col < pattern.width; col += labelStep) {
+    doc.text(String(col + 1), startX + col * cs + cs / 2, startY - 1, {
+      align: "center",
+    });
+  }
+  for (let row = 0; row < pattern.height; row += labelStep) {
+    doc.text(String(row + 1), startX - 1, startY + row * cs + cs / 2, {
+      align: "right",
+      baseline: "middle",
+    });
   }
   doc.setTextColor(0);
 }

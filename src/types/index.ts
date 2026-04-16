@@ -31,8 +31,8 @@ export type DitheringMethod =
 
 /** Settings for the processing pipeline */
 export interface PipelineSettings {
-  gridWidth: number;
-  gridHeight: number;
+  /** Side length in beads — output is always square (gridSize × gridSize) */
+  gridSize: number;
   palette: BeadPalette;
   algorithm: ColorMatchAlgorithm;
   dithering: DitheringMethod;

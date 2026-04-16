@@ -120,14 +120,18 @@ export function downsampleImage(
       let g = linearToSrgb(sumG / count);
       let b = linearToSrgb(sumB / count);
 
-      // Snap near-white / near-black pixels that are close to neutral.
+      // Snap near-white / near-black pixels to pure extremes. The
+      // thresholds are intentionally generous so that faint anti-aliasing
+      // halos around transparent-PNG subjects collapse to a single
+      // background color rather than scattering across Mist / Light Grey /
+      // Cream, which fragments the despeckle exterior flood-fill.
       if (snap) {
         const mn = Math.min(r, g, b);
         const mx = Math.max(r, g, b);
         const chroma = mx - mn;
-        if (mn >= 240 && chroma <= 12) {
+        if (mn >= 220 && chroma <= 20) {
           r = g = b = 255;
-        } else if (mx <= 15 && chroma <= 12) {
+        } else if (mx <= 25 && chroma <= 20) {
           r = g = b = 0;
         }
       }
@@ -168,27 +172,30 @@ export function mirrorPixelGrid(
 }
 
 /**
- * Suggest a grid size that preserves the image's aspect ratio,
- * using the given short-side target. Clamped to [5, 200].
+ * Crop a source image to a square region and return a new HTMLImageElement.
+ *
+ * @param srcX     Top-left X of the crop region in the source image (pixels)
+ * @param srcY     Top-left Y of the crop region in the source image (pixels)
+ * @param srcSize  Side length of the square crop region (in source pixels)
  */
-export function suggestGridSize(
+export function cropImageToSquare(
   img: HTMLImageElement,
-  shortSideTarget = 58,
-): { width: number; height: number } {
-  const w = img.naturalWidth || img.width;
-  const h = img.naturalHeight || img.height;
-  if (w <= 0 || h <= 0) {
-    return { width: shortSideTarget, height: shortSideTarget };
-  }
-  let width: number, height: number;
-  if (w <= h) {
-    width = shortSideTarget;
-    height = Math.round((shortSideTarget * h) / w);
-  } else {
-    height = shortSideTarget;
-    width = Math.round((shortSideTarget * w) / h);
-  }
-  width = Math.max(5, Math.min(200, width));
-  height = Math.max(5, Math.min(200, height));
-  return { width, height };
+  srcX: number,
+  srcY: number,
+  srcSize: number,
+): Promise<HTMLImageElement> {
+  const canvas = document.createElement("canvas");
+  canvas.width = srcSize;
+  canvas.height = srcSize;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, srcSize, srcSize);
+  ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, srcSize, srcSize);
+  const dataUrl = canvas.toDataURL("image/png");
+  return new Promise((resolve, reject) => {
+    const out = new Image();
+    out.onload = () => resolve(out);
+    out.onerror = () => reject(new Error("Failed to load cropped image"));
+    out.src = dataUrl;
+  });
 }

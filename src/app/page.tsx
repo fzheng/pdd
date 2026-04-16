@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { PipelineSettings, BeadColor } from "@/types";
 import { perlerPalette } from "@/data/perlerPalette";
-import { loadImage, suggestGridSize } from "@/lib/imageUtils";
 import { generatePattern, setCellColor, replaceColor } from "@/lib/pipeline";
 import {
   PatternHistory,
@@ -18,16 +17,16 @@ import ImageUploader from "@/components/ImageUploader";
 import ControlPanel from "@/components/ControlPanel";
 import ImagePreview from "@/components/ImagePreview";
 import BeadPatternView from "@/components/BeadPattern";
-import BeadInventory from "@/components/BeadInventory";
-import ComparisonSlider from "@/components/ComparisonSlider";
+import BeadSidebar from "@/components/BeadSidebar";
 import ExportPanel from "@/components/ExportPanel";
-import EditorToolbar, { EditMode } from "@/components/EditorToolbar";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { useI18n } from "@/i18n/I18nProvider";
+import SquareCropModal from "@/components/SquareCropModal";
+import ComparisonModal from "@/components/ComparisonModal";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
+import { type EditMode } from "@/components/EditorToolbar";
 
 const defaultSettings: PipelineSettings = {
-  gridWidth: 58,
-  gridHeight: 58,
+  gridSize: 58,
   palette: perlerPalette,
   algorithm: "ciede2000",
   dithering: "none",
@@ -37,49 +36,106 @@ const defaultSettings: PipelineSettings = {
   despeckle: 6,
 };
 
+/**
+ * Top-level page. Orchestrates:
+ *   1) Upload → SquareCropModal (user picks a square crop)
+ *   2) Cropped image → ControlPanel settings → Generate pattern
+ *   3) Main grid: small thumbnail (click to compare) + large pattern canvas
+ *   4) Right sidebar: edit tools + color inventory (collapsible)
+ *   5) Export: PNG or PDF (single page, or one-per-pegboard)
+ */
 export default function Home() {
-  const { t } = useI18n();
+  // Upload flow: the *pending* file is what the user just selected and
+  // hasn't cropped yet. The *cropped* image is the source of truth after
+  // the crop modal is confirmed.
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [croppedImage, setCroppedImage] = useState<HTMLImageElement | null>(null);
+  const [croppedUrl, setCroppedUrl] = useState<string | null>(null);
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
   const [settings, setSettings] = useState<PipelineSettings>(defaultSettings);
   const [history, setHistory] = useState<PatternHistory>(emptyHistory());
   const [isProcessing, setIsProcessing] = useState(false);
 
   const [editMode, setEditMode] = useState<EditMode>("none");
   const [activeColor, setActiveColor] = useState<BeadColor | null>(null);
+  const [compareOpen, setCompareOpen] = useState(false);
+
+  // True once the user has generated at least once with the current image.
+  // After this, any settings change auto-regenerates (debounced) so the
+  // user never needs to hunt for a "regenerate" button.
+  const hasGeneratedRef = useRef(false);
 
   const pattern = history.present;
 
-  const handleImageSelected = useCallback(async (file: File) => {
-    setImageFile(file);
-    const img = await loadImage(file);
-    setImageElement(img);
-    setHistory(emptyHistory());
-    setEditMode("none");
-    setActiveColor(null);
-    // Auto-adjust grid to preserve image aspect ratio
-    const suggested = suggestGridSize(img, 58);
-    setSettings((s) => ({ ...s, gridWidth: suggested.width, gridHeight: suggested.height }));
+  const handleImageSelected = useCallback((file: File) => {
+    setPendingFile(file);
   }, []);
 
+  const handleCropConfirm = useCallback(
+    (cropped: HTMLImageElement) => {
+      setCroppedImage(cropped);
+      setCroppedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return cropped.src;
+      });
+      setHistory(emptyHistory());
+      setEditMode("none");
+      setActiveColor(null);
+      setPendingFile(null);
+      hasGeneratedRef.current = false;
+    },
+    [],
+  );
+
+  const handleCropCancel = useCallback(() => setPendingFile(null), []);
+
+  useEffect(() => {
+    return () => {
+      if (croppedUrl && croppedUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(croppedUrl);
+      }
+    };
+  }, [croppedUrl]);
+
+  // First-run generate (triggered by the big CTA in the empty pattern area).
   const handleGenerate = useCallback(() => {
-    if (!imageElement) return;
+    if (!croppedImage) return;
     setIsProcessing(true);
     requestAnimationFrame(() => {
       try {
-        const result = generatePattern(imageElement, settings);
+        const result = generatePattern(croppedImage, settings);
         setHistory((h) => pushPattern(h, result));
+        hasGeneratedRef.current = true;
       } finally {
         setIsProcessing(false);
       }
     });
-  }, [imageElement, settings]);
+  }, [croppedImage, settings]);
+
+  // Live auto-regenerate: after the first generation, any settings tweak
+  // (slider drag, palette swap, dithering toggle…) re-runs the pipeline
+  // automatically so the canvas updates in near-real-time. Debounced at
+  // 200 ms so dragging a slider doesn't freeze the UI.
+  useEffect(() => {
+    if (!hasGeneratedRef.current || !croppedImage) return;
+    const timer = setTimeout(() => {
+      setIsProcessing(true);
+      requestAnimationFrame(() => {
+        try {
+          const result = generatePattern(croppedImage, settings);
+          setHistory((h) => pushPattern(h, result));
+        } finally {
+          setIsProcessing(false);
+        }
+      });
+    }, 200);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only fire on settings change
+  }, [settings]);
 
   const handleCellClick = useCallback(
     (row: number, col: number, existing: BeadColor) => {
       if (!pattern) return;
-
       if (editMode === "brush") {
         if (!activeColor) {
           setActiveColor(existing);
@@ -90,7 +146,6 @@ export default function Home() {
         setHistory((h) => pushPattern(h, next));
         return;
       }
-
       if (editMode === "replace") {
         if (!activeColor) {
           setActiveColor(existing);
@@ -108,7 +163,7 @@ export default function Home() {
   const handleUndo = useCallback(() => setHistory((h) => undo(h)), []);
   const handleRedo = useCallback(() => setHistory((h) => redo(h)), []);
 
-  // Keyboard shortcuts for undo/redo
+  // Keyboard shortcuts: Cmd/Ctrl-Z undo, Cmd/Ctrl-Shift-Z or Cmd/Ctrl-Y redo.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -126,87 +181,91 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handler);
   }, [handleUndo, handleRedo]);
 
-  const headerEmojis = useMemo(() => ["🧸", "🌈", "🎨", "✨", "🍬", "🐻"], []);
-
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-20 backdrop-blur bg-white/70 border-b-2 border-pink-100">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-pink-600 leading-tight">
-              {t("app.title")}
-            </h1>
-            <p className="text-xs sm:text-sm text-purple-400 -mt-0.5">
-              {t("app.tagline")}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex gap-1 text-lg">
-              {headerEmojis.map((e, i) => (
-                <span key={i} className="animate-bounce-slow" style={{ animationDelay: `${i * 0.15}s` }}>
-                  {e}
-                </span>
-              ))}
-            </div>
-            <LanguageSwitcher />
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      <SiteHeader />
 
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-5">
-        <ImageUploader onImageSelected={handleImageSelected} />
+      <main className="max-w-7xl mx-auto w-full px-4 py-6 space-y-5 flex-1">
+        {/* Big drop-zone only before the first upload; afterwards the
+            swap-image button inside ControlPanel takes over. */}
+        {!croppedImage && <ImageUploader onImageSelected={handleImageSelected} />}
 
-        <ControlPanel
-          settings={settings}
-          onSettingsChange={setSettings}
-          onGenerate={handleGenerate}
-          isProcessing={isProcessing}
-          hasImage={!!imageElement}
-        />
-
-        {pattern && (
-          <EditorToolbar
-            mode={editMode}
-            onModeChange={(m) => {
-              setEditMode(m);
-              if (m === "none") setActiveColor(null);
-            }}
-            activeColor={activeColor}
-            canUndo={canUndo(history)}
-            canRedo={canRedo(history)}
-            onUndo={handleUndo}
-            onRedo={handleRedo}
+        {croppedImage && (
+          <ControlPanel
+            settings={settings}
+            onSettingsChange={setSettings}
           />
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <ImagePreview imageFile={imageFile} />
+        {/* Main workspace: thumbnail + pattern. Bead sidebar is a
+            fixed-positioned drawer (sibling below) — it overlays rather
+            than reflows, so the pattern canvas size is stable regardless
+            of whether the inventory is open. */}
+        {croppedUrl ? (
+          <div className="grid grid-cols-[max-content_1fr] gap-3 items-start">
+            <div className="w-32 sm:w-40">
+              <ImagePreview
+                imageUrl={croppedUrl}
+                canCompare={!!pattern}
+                onOpenCompare={() => setCompareOpen(true)}
+                onSwapImage={handleImageSelected}
+              />
+            </div>
+            <div className="min-w-0">
+              <BeadPatternView
+                pattern={pattern}
+                editMode={editMode}
+                activeColor={activeColor}
+                onCellClick={handleCellClick}
+                onGenerate={handleGenerate}
+                canGenerate={!!croppedImage}
+                isProcessing={isProcessing}
+              />
+            </div>
+          </div>
+        ) : (
           <BeadPatternView
             pattern={pattern}
             editMode={editMode}
             activeColor={activeColor}
             onCellClick={handleCellClick}
+            onGenerate={handleGenerate}
+            canGenerate={!!croppedImage}
+            isProcessing={isProcessing}
           />
-        </div>
+        )}
 
-        <ComparisonSlider imageFile={imageFile} pattern={pattern} />
-
-        <ExportPanel pattern={pattern} />
-
-        <BeadInventory
+        <BeadSidebar
           pattern={pattern}
-          onPickColor={
-            editMode !== "none"
-              ? (c) => setActiveColor(c)
-              : undefined
-          }
-          activeColorId={activeColor?.id}
+          mode={editMode}
+          onModeChange={(m) => {
+            setEditMode(m);
+            if (m === "none") setActiveColor(null);
+          }}
+          activeColor={activeColor}
+          onPickColor={setActiveColor}
+          canUndo={canUndo(history)}
+          canRedo={canRedo(history)}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
         />
 
-        <footer className="text-center text-xs text-purple-400 py-6">
-          {t("footer.madeWith")} 🌸
-        </footer>
+        <ExportPanel pattern={pattern} />
       </main>
+
+      <SiteFooter />
+
+      <SquareCropModal
+        file={pendingFile}
+        onConfirm={handleCropConfirm}
+        onCancel={handleCropCancel}
+      />
+      <ComparisonModal
+        imageUrl={croppedUrl}
+        pattern={pattern}
+        open={compareOpen}
+        onClose={() => setCompareOpen(false)}
+      />
     </div>
   );
 }

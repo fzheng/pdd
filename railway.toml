@@ -1,0 +1,20 @@
+# Railway native deployment config.
+#
+# Railway's Railpack (successor to Nixpacks) auto-detects Next.js apps. This
+# file only overrides the bits that matter for this project:
+#   - Build uses `make build` so Makefile stays the canonical task runner.
+#   - Start binds 0.0.0.0:$PORT (Railway injects $PORT at runtime).
+#   - Health check hits `/` so Railway knows the service is live.
+#
+# Reference: https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "RAILPACK"
+buildCommand = "make build"
+
+[deploy]
+startCommand = "make start"
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

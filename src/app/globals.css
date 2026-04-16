@@ -49,6 +49,18 @@ body {
   animation: wiggle 1.5s ease-in-out infinite;
 }
 
+/* Slow, gentle pulse — used on the sidebar open-handle chevron so the
+ * drawer's "there's a panel here, click me" affordance is visible
+ * without being annoying. */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: translateX(0); }
+  50% { opacity: 0.55; transform: translateX(-3px); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 1.8s ease-in-out infinite;
+}
+
 /* Rounded focus rings matching the theme */
 *:focus-visible {
   outline: 3px solid rgba(244, 114, 182, 0.5);

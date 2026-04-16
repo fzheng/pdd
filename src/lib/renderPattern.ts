@@ -61,7 +61,7 @@ export function renderPatternToCanvas(
           ctx.fill();
         }
 
-        if (showColorCodes && cellSize >= 18) {
+        if (showColorCodes && cellSize >= 12) {
           drawLabel(ctx, cell.beadColor.sku, cell.beadColor.rgb, cx, cy, cellSize);
         }
       }
@@ -83,7 +83,7 @@ export function renderPatternToCanvas(
           ctx.strokeRect(px, py, cellSize, cellSize);
         }
 
-        if (showColorCodes && cellSize >= 14) {
+        if (showColorCodes && cellSize >= 10) {
           drawLabel(
             ctx,
             cell.beadColor.sku,

@@ -5,6 +5,7 @@ import { BeadPattern } from "@/types";
 import { exportPatternAsPng } from "@/lib/exportPng";
 import { exportPatternAsPdf, PdfLabels } from "@/lib/exportPdf";
 import { useI18n } from "@/i18n/I18nProvider";
+import { localizedColorName } from "@/i18n/colorNames";
 
 const PEGBOARD = 29;
 
@@ -12,9 +13,19 @@ interface ExportPanelProps {
   pattern: BeadPattern | null;
 }
 
+/**
+ * Export controls. By default the PDF renders the whole pattern on a single
+ * A4 page (auto-scaled to fit). If the user plans to assemble physically,
+ * enabling "split into pegboards" emits one page per 29×29 section instead
+ * — matching the standard physical pegboard size for 5 mm beads.
+ */
 export default function ExportPanel({ pattern }: ExportPanelProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [cellSizeMm, setCellSizeMm] = useState(5);
+  const [splitByPegboard, setSplitByPegboard] = useState(false);
+  // Default ON — users asked for SKUs on export so the pattern is
+  // actually usable for assembly without flipping back to the app.
+  const [showColorCodes, setShowColorCodes] = useState(true);
   const [busy, setBusy] = useState<null | "png" | "pdf">(null);
 
   if (!pattern) return null;
@@ -37,6 +48,7 @@ export default function ExportPanel({ pattern }: ExportPanelProps) {
     if (!pattern) return;
     setBusy("pdf");
     try {
+      // Let React paint the "busy" state before the heavy PDF build.
       await new Promise((r) => requestAnimationFrame(() => r(null)));
 
       const total = Array.from(pattern.colorCounts.values()).reduce(
@@ -71,6 +83,9 @@ export default function ExportPanel({ pattern }: ExportPanelProps) {
       exportPatternAsPdf(pattern, {
         cellSizeMm,
         fileName: `bead-pattern-${pattern.width}x${pattern.height}.pdf`,
+        splitByPegboard,
+        showColorCodes,
+        nameForColor: (c) => localizedColorName(c.name, locale),
         labels,
       });
     } finally {
@@ -84,41 +99,67 @@ export default function ExportPanel({ pattern }: ExportPanelProps) {
         💾 {t("export.title")}
       </h3>
 
-      <div>
-        <label className="block text-xs font-bold text-blue-500 mb-1">
-          {t("export.cellSize")}
-        </label>
-        <div className="flex items-center gap-2">
-          <input
-            type="range"
-            min={2}
-            max={10}
-            step={0.5}
-            value={cellSizeMm}
-            onChange={(e) => setCellSizeMm(parseFloat(e.target.value))}
-            className="w-32 accent-blue-400"
-          />
-          <span className="text-xs font-mono text-gray-500 w-10">
-            {cellSizeMm.toFixed(1)}mm
-          </span>
+      <label className="flex items-center gap-2 pb-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={showColorCodes}
+          onChange={(e) => setShowColorCodes(e.target.checked)}
+          className="w-4 h-4 rounded accent-blue-400"
+        />
+        <span className="text-sm text-gray-700">{t("export.showCodes")}</span>
+      </label>
+
+      <label className="flex items-center gap-2 pb-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={splitByPegboard}
+          onChange={(e) => setSplitByPegboard(e.target.checked)}
+          className="w-4 h-4 rounded accent-blue-400"
+        />
+        <span className="text-sm text-gray-700">
+          {t("export.splitByPegboard")}
+        </span>
+      </label>
+
+      {splitByPegboard && (
+        <div>
+          <label className="block text-xs font-bold text-blue-500 mb-1">
+            {t("export.cellSize")}
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min={2}
+              max={10}
+              step={0.5}
+              value={cellSizeMm}
+              onChange={(e) => setCellSizeMm(parseFloat(e.target.value))}
+              className="w-32 accent-blue-400"
+            />
+            <span className="text-xs font-mono text-gray-500 w-10">
+              {cellSizeMm.toFixed(1)}mm
+            </span>
+          </div>
         </div>
+      )}
+
+      <div className="ml-auto flex gap-2">
+        <button
+          onClick={doPng}
+          disabled={busy !== null}
+          className="px-5 py-2 bg-gradient-to-r from-sky-400 to-blue-400 text-white text-sm font-bold rounded-full shadow hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 transition-all"
+        >
+          {busy === "png" ? t("export.generating") : t("export.png")}
+        </button>
+
+        <button
+          onClick={doPdf}
+          disabled={busy !== null}
+          className="px-5 py-2 bg-gradient-to-r from-purple-400 to-pink-400 text-white text-sm font-bold rounded-full shadow hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 transition-all"
+        >
+          {busy === "pdf" ? t("export.generating") : t("export.pdf")}
+        </button>
       </div>
-
-      <button
-        onClick={doPng}
-        disabled={busy !== null}
-        className="px-5 py-2 bg-gradient-to-r from-sky-400 to-blue-400 text-white text-sm font-bold rounded-full shadow hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 transition-all"
-      >
-        {busy === "png" ? t("export.generating") : t("export.png")}
-      </button>
-
-      <button
-        onClick={doPdf}
-        disabled={busy !== null}
-        className="px-5 py-2 bg-gradient-to-r from-purple-400 to-pink-400 text-white text-sm font-bold rounded-full shadow hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 transition-all"
-      >
-        {busy === "pdf" ? t("export.generating") : t("export.pdf")}
-      </button>
     </div>
   );
 }
