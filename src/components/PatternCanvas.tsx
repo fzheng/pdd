@@ -51,6 +51,7 @@ export default function PatternCanvas({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const cellSizeRef = useRef(16);
   const [resizeTick, setResizeTick] = useState(0);
+  const [wrapperWidth, setWrapperWidth] = useState(0);
   const [hover, setHover] = useState<{
     color: BeadColor;
     row: number;
@@ -77,6 +78,7 @@ export default function PatternCanvas({
 
     const containerW =
       viewportW ?? Math.max(240, wrapper.clientWidth - 24);
+    setWrapperWidth(wrapper.clientWidth);
     let availH: number;
     if (viewportH !== undefined) {
       availH = viewportH;
@@ -191,7 +193,7 @@ export default function PatternCanvas({
           style={{
             left: Math.min(
               hover.x + 14,
-              (wrapperRef.current?.clientWidth ?? 9999) - 120,
+              (wrapperWidth || 9999) - 120,
             ),
             top: Math.max(hover.y - 30, 4),
           }}

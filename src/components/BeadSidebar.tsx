@@ -17,6 +17,8 @@ interface BeadSidebarProps {
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
+  /** When true, the drawer is forced closed and the handle hides. */
+  forceClosed?: boolean;
 }
 
 /**
@@ -33,6 +35,7 @@ export default function BeadSidebar({
   canRedo,
   onUndo,
   onRedo,
+  forceClosed = false,
 }: BeadSidebarProps) {
   const { t, locale } = useI18n();
   const [open, setOpen] = useState(false);
@@ -46,6 +49,17 @@ export default function BeadSidebar({
     return () => window.removeEventListener("keydown", handler);
   }, [open]);
 
+  // Sync local `open` with parent-controlled `forceClosed`. The lint rule
+  // flags setState-in-effect as a smell, but this IS the synchronization
+  // point: a parent signal has to drive a local drawer state that the
+  // user can also flip on their own.
+  useEffect(() => {
+    if (forceClosed && open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setOpen(false);
+    }
+  }, [forceClosed, open]);
+
   if (!pattern) return null;
 
   const entries = Array.from(pattern.colorCounts.values()).sort(
@@ -56,7 +70,7 @@ export default function BeadSidebar({
   return (
     <>
       {/* Floating handle */}
-      {!open && (
+      {!open && !forceClosed && (
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -80,7 +94,7 @@ export default function BeadSidebar({
       )}
 
       {/* Dim scrim */}
-      {open && (
+      {open && !forceClosed && (
         <div
           aria-hidden
           onClick={() => setOpen(false)}
@@ -91,9 +105,11 @@ export default function BeadSidebar({
       {/* Drawer panel */}
       <aside
         className={`fixed right-0 top-0 h-full z-50 w-[92vw] sm:w-[24rem] bg-paper border-l border-[color:var(--hairline)] shadow-2xl flex flex-col transition-transform duration-200 ease-out ${
-          open ? "translate-x-0" : "translate-x-full pointer-events-none"
+          open && !forceClosed
+            ? "translate-x-0"
+            : "translate-x-full pointer-events-none"
         }`}
-        aria-hidden={!open}
+        aria-hidden={!open || forceClosed}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[color:var(--hairline)]">

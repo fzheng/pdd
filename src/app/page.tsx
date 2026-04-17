@@ -23,7 +23,9 @@ import SquareCropModal from "@/components/SquareCropModal";
 import ComparisonModal from "@/components/ComparisonModal";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import FocusModeOverlay from "@/components/FocusModeOverlay";
 import { type EditMode } from "@/components/EditorToolbar";
+import { BeadShape } from "@/lib/renderPattern";
 
 const defaultSettings: PipelineSettings = {
   gridSize: 58,
@@ -59,6 +61,9 @@ export default function Home() {
   const [editMode, setEditMode] = useState<EditMode>("none");
   const [activeColor, setActiveColor] = useState<BeadColor | null>(null);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [shape, setShape] = useState<BeadShape>("circle");
+  const [showLabels, setShowLabels] = useState(false);
+  const [isFocus, setIsFocus] = useState(false);
 
   // True once the user has generated at least once with the current image.
   // After this, any settings change auto-regenerates (debounced) so the
@@ -212,6 +217,11 @@ export default function Home() {
                 onGenerate={handleGenerate}
                 canGenerate={!!croppedImage}
                 isProcessing={isProcessing}
+                shape={shape}
+                onShapeChange={setShape}
+                showLabels={showLabels}
+                onShowLabelsChange={setShowLabels}
+                onEnterFocus={pattern ? () => setIsFocus(true) : undefined}
               />
             </div>
           </div>
@@ -224,6 +234,11 @@ export default function Home() {
             onGenerate={handleGenerate}
             canGenerate={!!croppedImage}
             isProcessing={isProcessing}
+            shape={shape}
+            onShapeChange={setShape}
+            showLabels={showLabels}
+            onShowLabelsChange={setShowLabels}
+            onEnterFocus={pattern ? () => setIsFocus(true) : undefined}
           />
         )}
 
@@ -240,6 +255,7 @@ export default function Home() {
           canRedo={canRedo(history)}
           onUndo={handleUndo}
           onRedo={handleRedo}
+          forceClosed={isFocus}
         />
 
         <ExportPanel pattern={pattern} />
@@ -258,6 +274,30 @@ export default function Home() {
         open={compareOpen}
         onClose={() => setCompareOpen(false)}
       />
+
+      {pattern && (
+        <FocusModeOverlay
+          open={isFocus}
+          pattern={pattern}
+          editMode={editMode}
+          onEditModeChange={(m) => {
+            setEditMode(m);
+            if (m === "none") setActiveColor(null);
+          }}
+          activeColor={activeColor}
+          onPickColor={setActiveColor}
+          onCellClick={handleCellClick}
+          shape={shape}
+          onShapeChange={setShape}
+          showLabels={showLabels}
+          onShowLabelsChange={setShowLabels}
+          canUndo={canUndo(history)}
+          canRedo={canRedo(history)}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onExit={() => setIsFocus(false)}
+        />
+      )}
     </div>
   );
 }
