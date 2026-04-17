@@ -40,6 +40,7 @@ export default function BeadPattern({
   onShapeChange,
   showLabels: propsShowLabels,
   onShowLabelsChange,
+  onEnterFocus,
 }: BeadPatternProps) {
   const { t } = useI18n();
   const [shapeInternal, setShapeInternal] = useState<BeadShape>("circle");
@@ -97,6 +98,27 @@ export default function BeadPattern({
                 {t("preview.labels")}
               </span>
             </label>
+
+            {onEnterFocus && (
+              <button
+                type="button"
+                onClick={onEnterFocus}
+                aria-label={t("focus.enter")}
+                title={t("focus.enter")}
+                className="btn btn-ink h-9 min-h-0 px-3 text-[0.82rem]"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path
+                    d="M4 10V4h6M14 4h6v6M20 14v6h-6M10 20H4v-6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="hidden sm:inline">{t("focus.enter")}</span>
+              </button>
+            )}
           </div>
         </div>
       )}

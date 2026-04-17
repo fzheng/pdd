@@ -197,4 +197,21 @@ describe("BeadPattern UI controls", () => {
     fireEvent.click(checkbox);
     expect((checkbox as HTMLInputElement).checked).toBe(true);
   });
+
+  it("renders the Focus button and fires onEnterFocus when clicked", () => {
+    const onEnterFocus = vi.fn();
+    renderWithI18n(
+      <BeadPattern
+        pattern={patternFrom([[WHITE, BLACK]])}
+        onEnterFocus={onEnterFocus}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText(/^focus$|专注模式|專注模式/i));
+    expect(onEnterFocus).toHaveBeenCalled();
+  });
+
+  it("does not render the Focus button when onEnterFocus is not provided", () => {
+    renderWithI18n(<BeadPattern pattern={patternFrom([[WHITE, BLACK]])} />);
+    expect(screen.queryByLabelText(/^focus$|专注模式|專注模式/i)).toBeNull();
+  });
 });
