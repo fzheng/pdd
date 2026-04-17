@@ -90,7 +90,16 @@ export type TranslationKey =
   | "footer.rights"
   | "lang.en"
   | "lang.zhCN"
-  | "lang.zhTW";
+  | "lang.zhTW"
+  | "hero.headlineA"
+  | "hero.headlineB"
+  | "preview.altSource"
+  | "focus.enter"
+  | "focus.exit"
+  | "focus.title"
+  | "focus.colorPickerTitle"
+  | "focus.toolbarShape"
+  | "focus.toolbarLabels";
 
 type Dict = Record<TranslationKey, string>;
 
@@ -185,6 +194,15 @@ const zhCN: Dict = {
   "lang.en": "English",
   "lang.zhCN": "简体中文",
   "lang.zhTW": "繁體中文",
+  "hero.headlineA": "一张照片，",
+  "hero.headlineB": "变成豆豆。",
+  "preview.altSource": "原图预览",
+  "focus.enter": "专注模式",
+  "focus.exit": "退出专注",
+  "focus.title": "专注模式",
+  "focus.colorPickerTitle": "选择颜色",
+  "focus.toolbarShape": "豆型",
+  "focus.toolbarLabels": "显示色号",
 };
 
 const zhTW: Dict = {
@@ -278,6 +296,15 @@ const zhTW: Dict = {
   "lang.en": "English",
   "lang.zhCN": "简体中文",
   "lang.zhTW": "繁體中文",
+  "hero.headlineA": "一張照片，",
+  "hero.headlineB": "變成豆豆。",
+  "preview.altSource": "原圖預覽",
+  "focus.enter": "專注模式",
+  "focus.exit": "退出專注",
+  "focus.title": "專注模式",
+  "focus.colorPickerTitle": "選擇顏色",
+  "focus.toolbarShape": "豆型",
+  "focus.toolbarLabels": "顯示色號",
 };
 
 const en: Dict = {
@@ -371,6 +398,15 @@ const en: Dict = {
   "lang.en": "English",
   "lang.zhCN": "简体中文",
   "lang.zhTW": "繁體中文",
+  "hero.headlineA": "A photo, ",
+  "hero.headlineB": "beaded.",
+  "preview.altSource": "Source preview",
+  "focus.enter": "Focus",
+  "focus.exit": "Exit focus",
+  "focus.title": "Focus mode",
+  "focus.colorPickerTitle": "Pick a color",
+  "focus.toolbarShape": "Shape",
+  "focus.toolbarLabels": "Labels",
 };
 
 const dicts: Record<Locale, Dict> = {

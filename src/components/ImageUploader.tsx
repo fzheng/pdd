@@ -36,7 +36,8 @@ export default function ImageUploader({ onImageSelected }: ImageUploaderProps) {
     <section className="max-w-[880px] mx-auto w-full pt-6 sm:pt-10 animate-reveal">
       {/* Quiet, short headline — that's all */}
       <h1 className="display text-[2.5rem] sm:text-[3.5rem] leading-[0.95] text-ink text-center tracking-[-0.03em]">
-        A photo,<span className="display-italic text-coral"> beaded.</span>
+        {t("hero.headlineA")}
+        <span className="display-italic text-coral">{t("hero.headlineB")}</span>
       </h1>
 
       {/* Generous drop-zone */}

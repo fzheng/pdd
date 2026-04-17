@@ -47,7 +47,7 @@ export default function ImagePreview({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}
-              alt="Source"
+              alt={t("preview.altSource")}
               className="block w-full aspect-square object-cover transition-transform group-hover:scale-[1.02]"
             />
             {canCompare && (
