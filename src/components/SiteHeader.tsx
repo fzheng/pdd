@@ -5,26 +5,30 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useI18n } from "@/i18n/I18nProvider";
 
 /**
- * Site-wide header. The title is a link back to the home page so users on
- * content pages (Terms, Privacy, explainer articles) can always return to
- * the tool.
+ * Minimal site header — a quiet bead-dot mark on the left, language pills on
+ * the right. No taglines, no marquees. The workspace is the star; the
+ * chrome stays out of the way.
  */
 export default function SiteHeader() {
   const { t } = useI18n();
   return (
-    <header className="sticky top-0 z-20 backdrop-blur bg-white/70 border-b-2 border-pink-100">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-        <Link href="/" className="group">
-          {/* Deliberately not an <h1>: content pages (Terms, Privacy, articles)
-              each render their own article-level h1 below. The site title
-              functions more like a logo than a page heading. */}
-          <div className="text-xl sm:text-2xl font-extrabold text-pink-600 leading-tight group-hover:text-pink-700 transition-colors">
+    <header className="sticky top-0 z-30 bg-[color:var(--paper)]/85 backdrop-blur border-b border-[color:var(--hairline)]">
+      <div className="max-w-[1400px] mx-auto px-5 sm:px-8 py-4 flex items-center justify-between gap-3">
+        <Link href="/" className="group flex items-center gap-3">
+          <span
+            aria-hidden
+            className="relative w-9 h-9 shrink-0 rounded-full grid grid-cols-2 grid-rows-2 gap-[3px] p-[4px] bg-paper-2 transition-transform group-hover:rotate-[10deg]"
+          >
+            <span className="rounded-full bg-coral" />
+            <span className="rounded-full bg-blue" />
+            <span className="rounded-full bg-butter" />
+            <span className="rounded-full bg-lime" />
+          </span>
+          <span className="display text-[1.5rem] text-ink leading-none tracking-[-0.03em]">
             {t("app.title")}
-          </div>
-          <p className="text-xs sm:text-sm text-purple-400 -mt-0.5">
-            {t("app.tagline")}
-          </p>
+          </span>
         </Link>
+
         <LanguageSwitcher />
       </div>
     </header>

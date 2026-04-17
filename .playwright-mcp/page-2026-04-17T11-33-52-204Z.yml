@@ -1,0 +1,51 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "豆P" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: 豆P
+        - generic [ref=e12]:
+          - button "中" [ref=e13]
+          - button "繁" [ref=e14]
+          - button "EN" [ref=e15]
+    - main [ref=e16]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]: 图纸尺寸（方形）
+            - generic [ref=e68]: 58 × 58
+          - slider "图纸尺寸（方形）" [ref=e69] [cursor=pointer]: "58"
+        - generic [ref=e70]:
+          - generic [ref=e72]: 豆豆品牌
+          - combobox "豆豆品牌" [ref=e73]:
+            - option "Perler (90)" [selected]
+            - option "Hama (48)"
+            - option "Artkal (144)"
+            - option "Nabbi (30)"
+            - option "Mard (47)"
+        - button "高级设置" [ref=e74] [cursor=pointer]:
+          - generic [ref=e75]: +
+          - text: 高级设置
+      - generic [ref=e76]:
+        - complementary [ref=e77]:
+          - button "Source" [disabled] [ref=e78]:
+            - img "Source" [ref=e79]
+          - button "换一张" [ref=e80] [cursor=pointer]
+        - button "✨ 生成图纸" [ref=e83]:
+          - generic [ref=e84] [cursor=pointer]:
+            - img [ref=e85]
+            - text: ✨ 生成图纸
+    - contentinfo [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: © 2026 SigmaPilot, LLC
+        - navigation [ref=e33]:
+          - link "什么是拼豆？" [ref=e34] [cursor=pointer]:
+            - /url: /learn/what-is-perler
+          - link "服务条款" [ref=e35] [cursor=pointer]:
+            - /url: /terms
+          - link "隐私政策" [ref=e36] [cursor=pointer]:
+            - /url: /privacy
+  - button "Open Next.js Dev Tools" [ref=e42] [cursor=pointer]:
+    - img [ref=e43]
+  - alert [ref=e46]

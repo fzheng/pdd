@@ -1,0 +1,32 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "豆P" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: 豆P
+        - generic [ref=e12]:
+          - button "中" [ref=e13]
+          - button "繁" [ref=e14]
+          - button "EN" [ref=e15]
+    - main [ref=e16]:
+      - generic [ref=e17]:
+        - heading "A photo, beaded." [level=1] [ref=e18]
+        - button "把图片拖到这里，或者点一下选择图片 支持 JPEG 和 PNG 格式 把图片拖到这里，或者点一下选择图片" [ref=e19] [cursor=pointer]:
+          - paragraph [ref=e25]: 把图片拖到这里，或者点一下选择图片
+          - paragraph [ref=e26]: 支持 JPEG 和 PNG 格式
+          - generic [ref=e27]: 把图片拖到这里，或者点一下选择图片
+      - generic [ref=e30]: 图纸会显示在这里 🎨
+    - contentinfo [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: © 2026 SigmaPilot, LLC
+        - navigation [ref=e34]:
+          - link "什么是拼豆？" [ref=e35] [cursor=pointer]:
+            - /url: /learn/what-is-perler
+          - link "服务条款" [ref=e36] [cursor=pointer]:
+            - /url: /terms
+          - link "隐私政策" [ref=e37] [cursor=pointer]:
+            - /url: /privacy
+  - button "Open Next.js Dev Tools" [ref=e43] [cursor=pointer]:
+    - img [ref=e44]
+  - alert [ref=e47]

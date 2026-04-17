@@ -8,12 +8,10 @@ import { localizedColorName } from "@/i18n/colorNames";
 
 interface BeadSidebarProps {
   pattern: BeadPattern | null;
-  // Edit mode state
   mode: EditMode;
   onModeChange: (mode: EditMode) => void;
   activeColor: BeadColor | null;
   onPickColor: (c: BeadColor) => void;
-  // History
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
@@ -21,14 +19,8 @@ interface BeadSidebarProps {
 }
 
 /**
- * Right-side drawer that surfaces the color inventory and edit tools
- * (brush / replace / undo / redo) in one place, so picking a color to
- * paint or replace with is one click away from the tool that uses it.
- *
- * The drawer is **fixed-positioned** and defaults to collapsed — opening
- * it slides a panel in from the right over the pattern instead of
- * pushing the pattern smaller. This keeps the pattern viewport stable
- * whether or not the inventory is visible.
+ * Right-side drawer — the color inventory + edit tools. Closed by default
+ * with a quiet floating handle; opens into a calm panel on top of content.
  */
 export default function BeadSidebar({
   pattern,
@@ -42,10 +34,8 @@ export default function BeadSidebar({
   onRedo,
 }: BeadSidebarProps) {
   const { t, locale } = useI18n();
-  // Closed by default — user opts in when they need the color list.
   const [open, setOpen] = useState(false);
 
-  // ESC-to-close is a standard drawer affordance.
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -64,165 +54,191 @@ export default function BeadSidebar({
 
   return (
     <>
-      {/* Floating "open inventory" handle — visible whenever the drawer
-          is closed. Intentionally loud (gradient background, arrow
-          nudges outward on hover, subtle pulse ring) so users discover
-          the color list without needing to mouse around the right edge. */}
+      {/* Floating handle */}
       {!open && (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="group fixed right-0 top-1/2 -translate-y-1/2 z-30 flex items-stretch shadow-2xl hover:shadow-[0_20px_40px_-8px_rgba(16,185,129,0.45)] transition-shadow"
+          className="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-2 px-3 py-4 rounded-full bg-ink text-paper shadow-lg hover:scale-[1.04] transition-transform"
           title={t("sidebar.expand")}
           aria-label={t("sidebar.expand")}
         >
           <span
             aria-hidden
-            className="flex items-center px-2 bg-gradient-to-b from-green-400 to-emerald-500 text-white rounded-l-2xl text-lg font-black animate-pulse-slow"
+            className="grid grid-cols-2 grid-rows-2 gap-[2px] w-5 h-5"
           >
-            ‹
+            <span className="rounded-full bg-coral" />
+            <span className="rounded-full bg-butter" />
+            <span className="rounded-full bg-lime" />
+            <span className="rounded-full bg-plum" />
           </span>
-          <span className="flex flex-col items-center justify-center gap-1 px-3 py-4 bg-gradient-to-br from-emerald-500 to-green-500 text-white font-bold">
-            <span className="text-xl leading-none">🎨</span>
-            <span
-              className="text-[11px] leading-none tracking-wider"
-              style={{ writingMode: "vertical-rl" }}
-            >
-              {t("sidebar.openColors")}
-            </span>
-            <span className="text-xs font-mono bg-white/25 rounded-full px-1.5 py-0.5 leading-none">
-              {entries.length}
-            </span>
+          <span className="text-[0.7rem] font-mono tabular-nums">
+            {entries.length}
           </span>
         </button>
       )}
 
-      {/* The drawer itself — rendered on top of content via fixed
-          positioning, so toggling it never reflows the pattern. */}
+      {/* Dim scrim */}
+      {open && (
+        <div
+          aria-hidden
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-40 bg-ink/25 backdrop-blur-[2px]"
+        />
+      )}
+
+      {/* Drawer panel */}
       <aside
-        className={`fixed right-0 top-0 h-full z-40 w-[92vw] sm:w-[22rem] bg-white border-l-4 border-green-200 shadow-2xl flex flex-col transition-transform duration-200 ${
+        className={`fixed right-0 top-0 h-full z-50 w-[92vw] sm:w-[24rem] bg-paper border-l border-[color:var(--hairline)] shadow-2xl flex flex-col transition-transform duration-200 ease-out ${
           open ? "translate-x-0" : "translate-x-full pointer-events-none"
         }`}
         aria-hidden={!open}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b-2 border-green-100">
-          <h3 className="text-sm font-bold text-green-600 flex items-center gap-1">
-            🎨 {t("inventory.title")}
-          </h3>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[color:var(--hairline)]">
+          <div className="leading-tight">
+            <span className="block display text-[1.15rem] text-ink">
+              {t("inventory.title")}
+            </span>
+            <span className="block text-[0.78rem] text-ink-soft">
+              {t("inventory.colors", { n: entries.length })} ·{" "}
+              {t("inventory.beadsTotal", { n: total })}
+            </span>
+          </div>
           <button
             onClick={() => setOpen(false)}
-            className="w-8 h-8 rounded-full bg-green-50 hover:bg-green-100 text-green-600 font-bold flex items-center justify-center"
+            className="w-10 h-10 rounded-full hover:bg-paper-2 flex items-center justify-center transition-colors"
             title={t("sidebar.collapse")}
             aria-label={t("sidebar.collapse")}
           >
-            ×
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M6 6l12 12M6 18L18 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
         </div>
 
         {/* Edit tools */}
-        <div className="p-3 border-b-2 border-green-100 flex flex-wrap gap-2">
-          <ToolButton
-            active={mode === "brush"}
-            onClick={() => onModeChange(mode === "brush" ? "none" : "brush")}
-            emoji="🖌️"
-            label={t("editor.brush")}
-          />
-          <ToolButton
-            active={mode === "replace"}
-            onClick={() => onModeChange(mode === "replace" ? "none" : "replace")}
-            emoji="🎯"
-            label={t("editor.replace")}
-          />
-          <button
-            onClick={onUndo}
-            disabled={!canUndo}
-            className="ml-auto px-3 py-1.5 text-xs font-bold text-white bg-orange-400 rounded-full hover:bg-orange-500 shadow disabled:opacity-30 disabled:shadow-none transition-colors"
-            title={t("editor.undo")}
-          >
-            ↶ {t("editor.undo")}
-          </button>
-          <button
-            onClick={onRedo}
-            disabled={!canRedo}
-            className="px-3 py-1.5 text-xs font-bold text-white bg-orange-400 rounded-full hover:bg-orange-500 shadow disabled:opacity-30 disabled:shadow-none transition-colors"
-            title={t("editor.redo")}
-          >
-            ↷ {t("editor.redo")}
-          </button>
+        <div className="p-4 border-b border-[color:var(--hairline)] space-y-2.5">
+          <div className="grid grid-cols-2 gap-2">
+            <ToolButton
+              active={mode === "brush"}
+              onClick={() => onModeChange(mode === "brush" ? "none" : "brush")}
+              label={t("editor.brush")}
+              icon={
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path
+                    d="M4 20l6-2 9-9a2.8 2.8 0 00-4-4l-9 9-2 6z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              }
+            />
+            <ToolButton
+              active={mode === "replace"}
+              onClick={() =>
+                onModeChange(mode === "replace" ? "none" : "replace")
+              }
+              label={t("editor.replace")}
+              icon={
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <circle cx="8" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="16" cy="16" r="4" stroke="currentColor" strokeWidth="2" />
+                  <path d="M11 8h5M8 11v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              }
+            />
+          </div>
 
-          {/* Active-color chip — only meaningful when a tool is selected. */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onUndo}
+              disabled={!canUndo}
+              className="btn btn-ghost flex-1 justify-center text-[0.82rem] min-h-0 h-9"
+            >
+              ↶ {t("editor.undo")}
+            </button>
+            <button
+              onClick={onRedo}
+              disabled={!canRedo}
+              className="btn btn-ghost flex-1 justify-center text-[0.82rem] min-h-0 h-9"
+            >
+              ↷ {t("editor.redo")}
+            </button>
+          </div>
+
           {mode !== "none" && (
-            <div className="w-full flex items-center gap-2 text-xs text-gray-600 bg-orange-50 rounded-full px-3 py-1.5">
+            <div className="flex items-center gap-2 text-[0.82rem] bg-paper-2 rounded-xl px-3 py-2 min-h-[44px]">
               {activeColor ? (
                 <>
                   <span
-                    className="w-5 h-5 rounded-full border-2 border-white shadow"
-                    style={{ backgroundColor: activeColor.hex }}
+                    className="w-5 h-5 rounded-full shrink-0"
+                    style={{
+                      backgroundColor: activeColor.hex,
+                      boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.1)",
+                    }}
                   />
                   <span className="font-medium truncate">
                     {localizedColorName(activeColor.name, locale)}
                   </span>
-                  <span className="font-mono text-gray-400 ml-auto">
+                  <span className="font-mono text-ink-soft ml-auto text-[0.75rem]">
                     {activeColor.sku}
                   </span>
                 </>
               ) : (
-                <span>
-                  {mode === "brush" ? t("editor.pickColor") : t("editor.replacePrompt")}
+                <span className="text-ink-soft text-[0.8rem]">
+                  {mode === "brush"
+                    ? t("editor.pickColor")
+                    : t("editor.replacePrompt")}
                 </span>
               )}
             </div>
           )}
         </div>
 
-        {/* Totals row */}
-        <div className="px-4 py-2 text-xs text-gray-500 flex items-center justify-between border-b border-green-100">
-          <span className="font-bold text-green-600">
-            {t("inventory.colors", { n: entries.length })}
-          </span>
-          <span className="font-bold text-green-600">
-            {t("inventory.beadsTotal", { n: total })}
-          </span>
-        </div>
-
-        {/* Color list — scrollable region fills remaining drawer height */}
+        {/* Color list */}
         <div className="overflow-auto p-2 flex-1">
-          <table className="w-full text-xs">
-            <tbody>
-              {entries.map(({ color, count }) => {
-                const active = color.id === activeColor?.id;
-                const clickable = mode !== "none";
-                return (
-                  <tr
-                    key={color.id}
+          <ul className="space-y-1">
+            {entries.map(({ color, count }) => {
+              const active = color.id === activeColor?.id;
+              const clickable = mode !== "none";
+              return (
+                <li key={color.id}>
+                  <button
+                    type="button"
                     onClick={clickable ? () => onPickColor(color) : undefined}
-                    className={`border-b border-green-50 transition-colors ${
-                      clickable ? "cursor-pointer hover:bg-green-50" : ""
-                    } ${active ? "bg-yellow-100" : ""}`}
+                    disabled={!clickable}
+                    className={`w-full grid grid-cols-[auto_1fr_auto_auto] items-center gap-2.5 px-3 py-2 min-h-[48px] text-left rounded-xl transition-colors ${
+                      clickable ? "hover:bg-paper-2 cursor-pointer" : "cursor-default"
+                    } ${active ? "bg-paper-2 ring-1 ring-ink" : ""}`}
                   >
-                    <td className="py-1.5 pl-1 pr-2 w-8">
-                      <div
-                        className={`w-5 h-5 rounded-full border-2 shadow-sm ${
-                          active ? "border-pink-500 ring-2 ring-pink-300" : "border-white"
-                        }`}
-                        style={{ backgroundColor: color.hex }}
-                      />
-                    </td>
-                    <td className="py-1.5 pr-1 text-gray-700 truncate max-w-[110px]">
+                    <span
+                      className="w-7 h-7 rounded-full shrink-0"
+                      style={{
+                        backgroundColor: color.hex,
+                        boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.1)",
+                      }}
+                    />
+                    <span className="truncate text-[0.88rem] text-ink">
                       {localizedColorName(color.name, locale)}
-                    </td>
-                    <td className="py-1.5 pr-1 text-gray-500 font-mono text-[10px]">
+                    </span>
+                    <span className="font-mono text-[0.72rem] text-ink-soft">
                       {color.sku}
-                    </td>
-                    <td className="py-1.5 pr-1 text-right font-mono text-gray-700">
+                    </span>
+                    <span className="font-mono text-[0.85rem] text-ink tabular-nums">
                       {count}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </aside>
     </>
@@ -232,24 +248,20 @@ export default function BeadSidebar({
 function ToolButton({
   active,
   onClick,
-  emoji,
   label,
+  icon,
 }: {
   active: boolean;
   onClick: () => void;
-  emoji: string;
   label: string;
+  icon: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-        active
-          ? "bg-gradient-to-r from-orange-400 to-pink-400 text-white shadow"
-          : "bg-orange-50 text-orange-600 hover:bg-orange-100"
-      }`}
+      className={`btn ${active ? "btn-ink" : "btn-ghost"} justify-center w-full min-h-0 h-10 text-[0.85rem]`}
     >
-      <span className="mr-1">{emoji}</span>
+      {icon}
       {label}
     </button>
   );

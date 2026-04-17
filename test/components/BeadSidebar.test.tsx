@@ -48,7 +48,7 @@ describe("BeadSidebar", () => {
     const props = base();
     renderWithI18n(<BeadSidebar {...props} />);
     fireEvent.click(screen.getByLabelText(/expand|展开|展開/i));
-    fireEvent.click(screen.getByText(/🖌️/).closest("button")!);
+    fireEvent.click(screen.getByText(/brush|画笔|畫筆/i).closest("button")!);
     expect(props.onModeChange).toHaveBeenCalledWith("brush");
   });
 
@@ -58,14 +58,17 @@ describe("BeadSidebar", () => {
       <BeadSidebar {...props} mode="brush" />,
     );
     fireEvent.click(screen.getByLabelText(/expand|展开|展開/i));
-    const firstRow = document.querySelector("tbody tr") as HTMLElement;
+    // Color rows are <li><button>… inside the inventory list; the first
+    // one corresponds to the dominant color in the pattern.
+    const firstRow = document.querySelector("aside ul li button") as HTMLElement;
     fireEvent.click(firstRow);
     expect(props.onPickColor).toHaveBeenCalled();
 
-    // In "none" mode the rows must not be clickable
+    // In "none" mode the rows are disabled
     props.onPickColor.mockClear();
     rerender(<BeadSidebar {...props} mode="none" />);
-    fireEvent.click(document.querySelector("tbody tr") as HTMLElement);
+    const row = document.querySelector("aside ul li button") as HTMLElement;
+    fireEvent.click(row);
     expect(props.onPickColor).not.toHaveBeenCalled();
   });
 

@@ -13,18 +13,10 @@ interface ExportPanelProps {
   pattern: BeadPattern | null;
 }
 
-/**
- * Export controls. By default the PDF renders the whole pattern on a single
- * A4 page (auto-scaled to fit). If the user plans to assemble physically,
- * enabling "split into pegboards" emits one page per 29×29 section instead
- * — matching the standard physical pegboard size for 5 mm beads.
- */
 export default function ExportPanel({ pattern }: ExportPanelProps) {
   const { t, locale } = useI18n();
   const [cellSizeMm, setCellSizeMm] = useState(5);
   const [splitByPegboard, setSplitByPegboard] = useState(false);
-  // Default ON — users asked for SKUs on export so the pattern is
-  // actually usable for assembly without flipping back to the app.
   const [showColorCodes, setShowColorCodes] = useState(true);
   const [busy, setBusy] = useState<null | "png" | "pdf">(null);
 
@@ -48,7 +40,6 @@ export default function ExportPanel({ pattern }: ExportPanelProps) {
     if (!pattern) return;
     setBusy("pdf");
     try {
-      // Let React paint the "busy" state before the heavy PDF build.
       await new Promise((r) => requestAnimationFrame(() => r(null)));
 
       const total = Array.from(pattern.colorCounts.values()).reduce(
@@ -94,39 +85,35 @@ export default function ExportPanel({ pattern }: ExportPanelProps) {
   }
 
   return (
-    <div className="bg-white rounded-3xl border-4 border-blue-200 p-5 shadow-lg flex flex-wrap items-end gap-4">
-      <h3 className="text-sm font-bold text-blue-500 w-full flex items-center gap-1">
-        💾 {t("export.title")}
-      </h3>
+    <section className="card p-5 sm:p-6 flex flex-col lg:flex-row lg:items-end gap-5 lg:gap-8">
+      <div className="flex-1 flex flex-col gap-2.5">
+        <label className="flex items-center gap-3 cursor-pointer select-none min-h-[44px] px-3 rounded-xl hover:bg-paper-2 transition-colors">
+          <input
+            type="checkbox"
+            checked={showColorCodes}
+            onChange={(e) => setShowColorCodes(e.target.checked)}
+            className="riso"
+          />
+          <span className="text-[0.9rem] text-ink">{t("export.showCodes")}</span>
+        </label>
 
-      <label className="flex items-center gap-2 pb-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={showColorCodes}
-          onChange={(e) => setShowColorCodes(e.target.checked)}
-          className="w-4 h-4 rounded accent-blue-400"
-        />
-        <span className="text-sm text-gray-700">{t("export.showCodes")}</span>
-      </label>
+        <label className="flex items-center gap-3 cursor-pointer select-none min-h-[44px] px-3 rounded-xl hover:bg-paper-2 transition-colors">
+          <input
+            type="checkbox"
+            checked={splitByPegboard}
+            onChange={(e) => setSplitByPegboard(e.target.checked)}
+            className="riso"
+          />
+          <span className="text-[0.9rem] text-ink">
+            {t("export.splitByPegboard")}
+          </span>
+        </label>
 
-      <label className="flex items-center gap-2 pb-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={splitByPegboard}
-          onChange={(e) => setSplitByPegboard(e.target.checked)}
-          className="w-4 h-4 rounded accent-blue-400"
-        />
-        <span className="text-sm text-gray-700">
-          {t("export.splitByPegboard")}
-        </span>
-      </label>
-
-      {splitByPegboard && (
-        <div>
-          <label className="block text-xs font-bold text-blue-500 mb-1">
-            {t("export.cellSize")}
-          </label>
-          <div className="flex items-center gap-2">
+        {splitByPegboard && (
+          <div className="flex items-center gap-3 px-3 pt-1 animate-reveal">
+            <span className="text-[0.78rem] text-ink-soft min-w-[110px]">
+              {t("export.cellSize")}
+            </span>
             <input
               type="range"
               min={2}
@@ -134,32 +121,85 @@ export default function ExportPanel({ pattern }: ExportPanelProps) {
               step={0.5}
               value={cellSizeMm}
               onChange={(e) => setCellSizeMm(parseFloat(e.target.value))}
-              className="w-32 accent-blue-400"
+              className="riso flex-1"
+              aria-label={t("export.cellSize")}
             />
-            <span className="text-xs font-mono text-gray-500 w-10">
-              {cellSizeMm.toFixed(1)}mm
+            <span className="font-mono text-[0.78rem] text-ink tabular-nums min-w-[48px] text-right">
+              {cellSizeMm.toFixed(1)} mm
             </span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="ml-auto flex gap-2">
+      <div className="flex gap-2 lg:min-w-[260px]">
         <button
           onClick={doPng}
           disabled={busy !== null}
-          className="px-5 py-2 bg-gradient-to-r from-sky-400 to-blue-400 text-white text-sm font-bold rounded-full shadow hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 transition-all"
+          className="btn btn-ghost flex-1 justify-center"
         >
-          {busy === "png" ? t("export.generating") : t("export.png")}
+          {busy === "png" ? (
+            <>
+              <Spinner />
+              {t("export.generating")}
+            </>
+          ) : (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {t("export.png")}
+            </>
+          )}
         </button>
 
         <button
           onClick={doPdf}
           disabled={busy !== null}
-          className="px-5 py-2 bg-gradient-to-r from-purple-400 to-pink-400 text-white text-sm font-bold rounded-full shadow hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 transition-all"
+          className="btn btn-ink flex-1 justify-center"
         >
-          {busy === "pdf" ? t("export.generating") : t("export.pdf")}
+          {busy === "pdf" ? (
+            <>
+              <Spinner />
+              {t("export.generating")}
+            </>
+          ) : (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+                <path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              {t("export.pdf")}
+            </>
+          )}
         </button>
       </div>
-    </div>
+    </section>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" opacity="0.3" />
+      <path
+        d="M21 12a9 9 0 00-9-9"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

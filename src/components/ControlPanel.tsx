@@ -8,9 +8,6 @@ import { useI18n } from "@/i18n/I18nProvider";
 /** Preset options for the palette-size reducer. 0 = "use all colors". */
 const MAX_COLOR_OPTIONS = [0, 16, 24, 36, 48, 72, 168];
 
-/** Slider bounds. Lower: anything smaller loses meaningful detail.
- *  Upper: above ~150 beads/side the browser crunches millions of pixels per
- *  render; typical crafting projects top out well under this. */
 const MIN_GRID = 20;
 const MAX_GRID = 150;
 
@@ -20,21 +17,9 @@ interface ControlPanelProps {
 }
 
 /**
- * Settings panel shown above the pattern preview.
- *
- * Layout intent:
- *   - Primary controls (size + brand) are **always visible** in a single row.
- *   - Secondary tuning (max colors, color-match algo, dithering, saturation,
- *     despeckle, mirror) lives behind an **"Advanced" collapse** to keep the
- *     default view uncluttered — sensible defaults already produce great
- *     results for most images.
- *   - The big upload drop-zone is only rendered *before* the first image.
- *     Once the user has a working image, a compact "swap image" button
- *     sits inline next to the generate CTA instead of re-rendering a whole
- *     row of empty upload prompts.
- *
- * The output is always square (one side length, chosen via slider); the
- * SquareCropModal handles any non-square source upstream.
+ * Settings — quiet row. Primary pair (size + palette) always visible;
+ * secondary tuning folds behind an "Advanced" reveal. Every control
+ * is at least 44pt tall so it works with fingertips on iPad.
  */
 export default function ControlPanel({
   settings,
@@ -48,24 +33,22 @@ export default function ControlPanel({
   }
 
   return (
-    <div className="bg-white rounded-3xl border-4 border-yellow-200 p-5 shadow-lg space-y-4">
-      {/* ──────────── Primary row ──────────── */}
-      <div className="flex flex-wrap items-end gap-5">
-        <Field label={t("controls.gridSize")} className="flex-1 min-w-[260px]">
-          <div className="flex items-center gap-3">
-            <input
-              type="range"
-              min={MIN_GRID}
-              max={MAX_GRID}
-              step={1}
-              value={settings.gridSize}
-              onChange={(e) => update({ gridSize: parseInt(e.target.value) })}
-              className="flex-1 accent-pink-400"
-            />
-            <span className="text-sm font-mono text-gray-700 font-bold w-20 text-right">
-              {settings.gridSize} × {settings.gridSize}
-            </span>
-          </div>
+    <section className="card p-5 sm:p-6">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-5 items-end">
+        <Field
+          label={t("controls.gridSize")}
+          value={`${settings.gridSize} × ${settings.gridSize}`}
+        >
+          <input
+            type="range"
+            min={MIN_GRID}
+            max={MAX_GRID}
+            step={1}
+            value={settings.gridSize}
+            onChange={(e) => update({ gridSize: parseInt(e.target.value) })}
+            className="riso w-full"
+            aria-label={t("controls.gridSize")}
+          />
         </Field>
 
         <Field label={t("controls.palette")}>
@@ -73,10 +56,12 @@ export default function ControlPanel({
             value={settings.palette.brand}
             onChange={(e) => {
               const p =
-                allPalettes.find((p) => p.brand === e.target.value) ?? allPalettes[0];
+                allPalettes.find((p) => p.brand === e.target.value) ??
+                allPalettes[0];
               update({ palette: p });
             }}
-            className="px-3 py-1.5 border-2 border-yellow-200 rounded-xl text-sm bg-white focus:outline-none focus:border-pink-300"
+            className="riso min-w-[180px]"
+            aria-label={t("controls.palette")}
           >
             {allPalettes.map((p) => (
               <option key={p.brand} value={p.brand}>
@@ -85,31 +70,39 @@ export default function ControlPanel({
             ))}
           </select>
         </Field>
-      </div>
 
-      {/* ──────────── Advanced (collapsed by default) ──────────── */}
-      <div>
         <button
           type="button"
           onClick={() => setAdvancedOpen((v) => !v)}
-          className="text-xs font-bold text-pink-500 hover:text-pink-600 flex items-center gap-1"
           aria-expanded={advancedOpen}
+          className="btn btn-ghost text-[0.85rem] self-end"
         >
-          <span aria-hidden className="transition-transform inline-block" style={{ transform: advancedOpen ? "rotate(90deg)" : "rotate(0deg)" }}>▸</span>
+          <span
+            aria-hidden
+            className="inline-block transition-transform"
+            style={{ transform: advancedOpen ? "rotate(45deg)" : "rotate(0deg)" }}
+          >
+            +
+          </span>
           {t("controls.advanced")}
         </button>
+      </div>
 
-        {advancedOpen && (
-          <div className="mt-3 flex flex-wrap items-end gap-4 pt-3 border-t border-yellow-100">
+      {advancedOpen && (
+        <div className="mt-6 pt-6 border-t border-[color:var(--hairline)] animate-reveal">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <Field label={t("controls.maxColors")}>
               <select
                 value={settings.maxColors}
                 onChange={(e) => update({ maxColors: parseInt(e.target.value) })}
-                className="px-3 py-1.5 border-2 border-yellow-200 rounded-xl text-sm bg-white focus:outline-none focus:border-pink-300"
+                className="riso w-full"
+                aria-label={t("controls.maxColors")}
               >
                 {MAX_COLOR_OPTIONS.map((n) => (
                   <option key={n} value={n}>
-                    {n === 0 ? t("controls.maxColors.all") : t("controls.maxColors.n", { n })}
+                    {n === 0
+                      ? t("controls.maxColors.all")
+                      : t("controls.maxColors.n", { n })}
                   </option>
                 ))}
               </select>
@@ -121,11 +114,16 @@ export default function ControlPanel({
                 onChange={(e) =>
                   update({ algorithm: e.target.value as ColorMatchAlgorithm })
                 }
-                className="px-3 py-1.5 border-2 border-yellow-200 rounded-xl text-sm bg-white focus:outline-none focus:border-pink-300"
+                className="riso w-full"
+                aria-label={t("controls.algorithm")}
               >
                 <option value="rgb-euclidean">{t("controls.algorithm.rgb")}</option>
-                <option value="cielab-euclidean">{t("controls.algorithm.cielab")}</option>
-                <option value="ciede2000">{t("controls.algorithm.ciede2000")}</option>
+                <option value="cielab-euclidean">
+                  {t("controls.algorithm.cielab")}
+                </option>
+                <option value="ciede2000">
+                  {t("controls.algorithm.ciede2000")}
+                </option>
               </select>
             </Field>
 
@@ -135,7 +133,8 @@ export default function ControlPanel({
                 onChange={(e) =>
                   update({ dithering: e.target.value as DitheringMethod })
                 }
-                className="px-3 py-1.5 border-2 border-yellow-200 rounded-xl text-sm bg-white focus:outline-none focus:border-pink-300"
+                className="riso w-full"
+                aria-label={t("controls.dithering")}
               >
                 <option value="none">{t("controls.dithering.none")}</option>
                 <option value="floyd-steinberg">{t("controls.dithering.fs")}</option>
@@ -146,69 +145,77 @@ export default function ControlPanel({
               </select>
             </Field>
 
-            <Field label={t("controls.saturation")}>
-              <div className="flex items-center gap-2">
-                <input
-                  type="range"
-                  min={0.5}
-                  max={1.6}
-                  step={0.05}
-                  value={settings.saturation}
-                  onChange={(e) => update({ saturation: parseFloat(e.target.value) })}
-                  className="w-24 accent-pink-400"
-                />
-                <span className="text-xs font-mono text-gray-500 w-8">
-                  {settings.saturation.toFixed(2)}
-                </span>
-              </div>
+            <Field
+              label={t("controls.saturation")}
+              value={settings.saturation.toFixed(2)}
+            >
+              <input
+                type="range"
+                min={0.5}
+                max={1.6}
+                step={0.05}
+                value={settings.saturation}
+                onChange={(e) => update({ saturation: parseFloat(e.target.value) })}
+                className="riso w-full"
+                aria-label={t("controls.saturation")}
+              />
             </Field>
 
-            <Field label={t("controls.despeckle")}>
-              <div className="flex items-center gap-2">
-                <input
-                  type="range"
-                  min={0}
-                  max={20}
-                  step={1}
-                  value={settings.despeckle}
-                  onChange={(e) => update({ despeckle: parseInt(e.target.value) })}
-                  className="w-24 accent-pink-400"
-                />
-                <span className="text-xs font-mono text-gray-500 w-8">
-                  {settings.despeckle === 0 ? "off" : settings.despeckle}
-                </span>
-              </div>
+            <Field
+              label={t("controls.despeckle")}
+              value={settings.despeckle === 0 ? "off" : String(settings.despeckle)}
+            >
+              <input
+                type="range"
+                min={0}
+                max={20}
+                step={1}
+                value={settings.despeckle}
+                onChange={(e) => update({ despeckle: parseInt(e.target.value) })}
+                className="riso w-full"
+                aria-label={t("controls.despeckle")}
+              />
             </Field>
 
-            <label className="flex items-center gap-2 pb-2 cursor-pointer">
+            <label className="flex items-center gap-3 self-end cursor-pointer select-none min-h-[44px] px-3 rounded-xl border border-[color:var(--hairline)] hover:bg-paper-2 transition-colors">
               <input
                 type="checkbox"
                 checked={settings.mirror}
                 onChange={(e) => update({ mirror: e.target.checked })}
-                className="w-4 h-4 rounded accent-pink-400"
+                className="riso"
               />
-              <span className="text-sm text-gray-700">{t("controls.mirror")}</span>
+              <span className="text-[0.9rem] text-ink">
+                {t("controls.mirror")}
+              </span>
             </label>
           </div>
-        )}
-      </div>
-
-    </div>
+        </div>
+      )}
+    </section>
   );
 }
 
 function Field({
   label,
-  className,
+  value,
   children,
 }: {
   label: string;
-  className?: string;
+  value?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className={className}>
-      <label className="block text-xs font-bold text-pink-500 mb-1">{label}</label>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="text-[0.78rem] font-medium text-ink-soft">
+          {label}
+        </span>
+        {value !== undefined && (
+          <span className="font-mono text-[0.78rem] text-ink tabular-nums">
+            {value}
+          </span>
+        )}
+      </div>
       {children}
     </div>
   );

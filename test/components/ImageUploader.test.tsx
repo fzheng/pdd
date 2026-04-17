@@ -7,7 +7,9 @@ import { renderWithI18n } from "../helpers";
 describe("ImageUploader", () => {
   it("renders the drop-zone prompt when idle", () => {
     renderWithI18n(<ImageUploader onImageSelected={vi.fn()} />);
-    expect(screen.getByText(/drop|拖/i)).toBeInTheDocument();
+    // The drop-zone's prompt appears in multiple places (the big target
+    // and the inner call-to-action button); at least one must be visible.
+    expect(screen.getAllByText(/drop|拖/i).length).toBeGreaterThan(0);
   });
 
   it("calls onImageSelected with a PNG file when picked via input", async () => {
@@ -38,7 +40,8 @@ describe("ImageUploader", () => {
     const { container } = renderWithI18n(
       <ImageUploader onImageSelected={onImageSelected} />,
     );
-    const zone = container.firstChild as HTMLElement;
+    // The interactive drop target is the role=button element in the layout.
+    const zone = container.querySelector('[role="button"]') as HTMLElement;
     const file = new File(["x"], "dog.jpg", { type: "image/jpeg" });
     fireEvent.drop(zone, { dataTransfer: { files: [file] } });
     expect(onImageSelected).toHaveBeenCalledOnce();

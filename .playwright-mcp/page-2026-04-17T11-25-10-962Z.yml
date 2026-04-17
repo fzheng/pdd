@@ -1,0 +1,85 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link "豆P Bead · Snap · Studio" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e12]:
+          - generic [ref=e13]: 豆P
+          - generic [ref=e14]: Bead · Snap · Studio
+      - generic [ref=e15]:
+        - generic [ref=e16]: P一张照片，变成拼豆图纸 ✨
+        - generic [ref=e17]:
+          - button "中" [ref=e18]
+          - button "繁" [ref=e19]
+          - button "EN" [ref=e20]
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - generic [ref=e24]: ◉ Perler
+        - generic [ref=e25]: ◉ Hama
+        - generic [ref=e26]: ◉ Artkal
+        - generic [ref=e27]: ◉ MARD
+        - generic [ref=e28]: ◉ Nabbi
+        - generic [ref=e29]: ◎ Riso Print Run №042
+        - generic [ref=e30]: ◉ 58 × 58 · Square Only
+        - generic [ref=e31]: ◎ Made in your kitchen
+      - generic [ref=e32]:
+        - generic [ref=e33]: ◉ Perler
+        - generic [ref=e34]: ◉ Hama
+        - generic [ref=e35]: ◉ Artkal
+        - generic [ref=e36]: ◉ MARD
+        - generic [ref=e37]: ◉ Nabbi
+        - generic [ref=e38]: ◎ Riso Print Run №042
+        - generic [ref=e39]: ◉ 58 × 58 · Square Only
+        - generic [ref=e40]: ◎ Made in your kitchen
+  - main [ref=e41]:
+    - generic [ref=e42]:
+      - generic [ref=e43]:
+        - generic:
+          - generic:
+            - text: №042
+            - text: Spring
+            - text: Batch
+        - generic [ref=e45]: Ed. 2026 · Issue Nº 01
+        - heading "your photo, pixel by pixel." [level=1] [ref=e46]:
+          - generic [ref=e47]: your photo,
+          - generic [ref=e48]: pixel by pixel.
+        - paragraph [ref=e49]: Upload a square-ish photo. We translate it into an honest, printable Perler / Hama / Artkal bead chart — tunable, editable, and ready for the ironing board.
+        - generic [ref=e50]:
+          - generic [ref=e51]: 5 brand palettes
+          - generic [ref=e52]: CIEDE2000 matching
+          - generic [ref=e53]: PDF export
+          - generic [ref=e54]: 29×29 pegboards
+        - list [ref=e55]:
+          - listitem [ref=e56]:
+            - generic [ref=e57]: "01"
+            - generic [ref=e58]: Upload
+          - listitem [ref=e59]:
+            - generic [ref=e60]: "02"
+            - generic [ref=e61]: Tune
+          - listitem [ref=e62]:
+            - generic [ref=e63]: "03"
+            - generic [ref=e64]: Iron
+      - button "Drop zone / 01 JPEG · PNG 把图片拖到这里，或者点一下选择图片 支持 JPEG 和 PNG 格式 把图片拖到这里，或者点一下选择图片" [ref=e65] [cursor=pointer]:
+        - generic [ref=e66]:
+          - generic [ref=e67]: Drop zone / 01
+          - generic [ref=e68]: JPEG · PNG
+        - generic [ref=e69]:
+          - img [ref=e70]
+          - paragraph [ref=e76]: 把图片拖到这里，或者点一下选择图片
+          - paragraph [ref=e77]: 支持 JPEG 和 PNG 格式
+          - generic [ref=e79]: 把图片拖到这里，或者点一下选择图片
+    - generic [ref=e81]:
+      - generic [ref=e84]: Pattern plate
+      - generic [ref=e86]: 图纸会显示在这里 🎨
+  - contentinfo [ref=e87]:
+    - generic [ref=e88]:
+      - generic [ref=e95]:
+        - generic [ref=e96]: 豆P · BeadSnap
+        - generic [ref=e97]: Printed in your browser · © 2026 SigmaPilot
+      - navigation [ref=e98]:
+        - link "什么是拼豆？" [ref=e99] [cursor=pointer]:
+          - /url: /learn/what-is-perler
+        - link "服务条款" [ref=e100] [cursor=pointer]:
+          - /url: /terms
+        - link "隐私政策" [ref=e101] [cursor=pointer]:
+          - /url: /privacy

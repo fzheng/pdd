@@ -10,26 +10,14 @@ interface BeadPatternProps {
   editMode?: "none" | "brush" | "replace";
   activeColor?: BeadColor | null;
   onCellClick?: (row: number, col: number, existingColor: BeadColor) => void;
-  /**
-   * Fires when the user triggers generation from the empty-state CTA.
-   * When provided (and `canGenerate` is true) the placeholder shown
-   * before the first pattern becomes a big click-to-generate button.
-   */
   onGenerate?: () => void;
-  /** True when an image is cropped and ready to generate. */
   canGenerate?: boolean;
-  /** True while pipeline is running — disables the CTA and shows a spinner. */
   isProcessing?: boolean;
 }
 
 /**
- * Main bead-pattern viewer. Renders the pattern to a canvas (via the shared
- * `renderPatternToCanvas`), supports brush/replace click edits, and shows a
- * floating tooltip with the bead SKU when hovering over a cell.
- *
- * When SKU labels are toggled on, the cell size is clamped up so each label
- * is actually legible — the canvas becomes larger than the container and is
- * scrolled, rather than rendering labels into unreadable sub-pixel blobs.
+ * Pattern viewer — a calm paper plane with the bead canvas. Shape toggle
+ * and SKU label toggle sit in the header as quiet segmented controls.
  */
 export default function BeadPattern({
   pattern,
@@ -47,10 +35,7 @@ export default function BeadPattern({
 
   const [shape, setShape] = useState<BeadShape>("circle");
   const [showLabels, setShowLabels] = useState(false);
-  // Tracked in state (not a ref) so the tooltip positioning code can read it
-  // during render without tripping the react-hooks/refs lint rule.
   const [containerWidth, setContainerWidth] = useState(0);
-  // Incremented on window-resize so the canvas re-layout effect reruns.
   const [resizeTick, setResizeTick] = useState(0);
   const [hover, setHover] = useState<{
     color: BeadColor;
@@ -60,9 +45,6 @@ export default function BeadPattern({
     y: number;
   } | null>(null);
 
-  // Keep the canvas size in sync with the viewport. The cell size is picked
-  // to fit **both** dimensions — container width AND available viewport
-  // height — so a 58×58 pattern stops scrolling on a typical laptop screen.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const onResize = () => setResizeTick((t) => t + 1);
@@ -70,8 +52,6 @@ export default function BeadPattern({
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // (Re)render the canvas whenever inputs change. Cell size is clamped to
-  // whichever viewport dimension is the binding constraint.
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -80,23 +60,15 @@ export default function BeadPattern({
     const cw = container.clientWidth;
     setContainerWidth(cw);
 
-    // Reserve space below the top of this container for the card header,
-    // page footer, and a small visual breathing room. Measured empirically:
-    // ~40px is enough to guarantee no scroll on typical laptop heights.
     const rect = container.getBoundingClientRect();
     const availH = Math.max(240, window.innerHeight - rect.top - 40);
 
-    // Card has p-4 (16px each side) plus the inner bg-gradient panel's p-2,
-    // ~40px vertical reserved for the shape/labels toolbar inside the card.
-    const innerW = cw - 16;
-    const innerH = availH - 80;
+    const innerW = cw - 24;
+    const innerH = availH - 120;
 
     const maxByW = Math.floor(innerW / pattern.width);
     const maxByH = Math.floor(innerH / pattern.height);
     let cs = Math.max(4, Math.min(maxByW, maxByH, 32));
-    // Labels need ≥14px to render readable SKU tails — if the pattern is
-    // dense enough that this overflows the viewport, the container's
-    // overflow-auto takes over (by design: legible > no-scroll in this case).
     if (showLabels) cs = Math.max(cs, 14);
     cellSizeRef.current = cs;
 
@@ -109,11 +81,10 @@ export default function BeadPattern({
       shape,
       showGridLines: shape === "square",
       showColorCodes: showLabels,
-      background: "#FFFFFF",
+      background: "#FAF6EF",
     });
   }, [pattern, shape, showLabels, resizeTick]);
 
-  /** Convert a mouse event's viewport coords into a (row, col) cell index. */
   const getCellAt = useCallback(
     (e: MouseEvent<HTMLCanvasElement>): { row: number; col: number } | null => {
       if (!pattern) return null;
@@ -148,8 +119,6 @@ export default function BeadPattern({
       return;
     }
     const color = pattern.cells[hit.row][hit.col].beadColor;
-    // Position relative to the scroll container so the tooltip travels with
-    // the cursor even inside an overflow-scroll parent.
     const contRect = containerRef.current?.getBoundingClientRect();
     const px = contRect ? e.clientX - contRect.left : e.clientX;
     const py = contRect ? e.clientY - contRect.top : e.clientY;
@@ -170,107 +139,158 @@ export default function BeadPattern({
         : "crosshair";
 
   return (
-    <div
-      ref={containerRef}
-      className="relative bg-white rounded-3xl border-4 border-pink-200 p-4 shadow-lg"
-    >
-      <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-        <h3 className="text-sm font-bold text-pink-500 flex items-center gap-1">
-          🎨 {t("preview.pattern")}
-        </h3>
-        {pattern && (
-          <div className="flex items-center gap-2 text-xs">
-            <div className="inline-flex rounded-full bg-pink-50 p-0.5">
-              <button
+    <section ref={containerRef} className="card p-4 sm:p-5 relative">
+      {pattern && (
+        <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
+          <span className="font-mono text-[0.72rem] text-ink-soft tabular-nums">
+            {pattern.width} × {pattern.height}
+          </span>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-full bg-paper-2 p-1">
+              <SegmentToggle
+                active={shape === "circle"}
                 onClick={() => setShape("circle")}
-                className={`px-2.5 py-1 rounded-full font-bold transition-all ${
-                  shape === "circle"
-                    ? "bg-pink-400 text-white shadow"
-                    : "text-pink-500 hover:bg-pink-100"
-                }`}
-                title={t("preview.shape.circle")}
-              >
-                ⚪ {t("preview.shape.circle")}
-              </button>
-              <button
+                label={t("preview.shape.circle")}
+                icon={
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                }
+              />
+              <SegmentToggle
+                active={shape === "square"}
                 onClick={() => setShape("square")}
-                className={`px-2.5 py-1 rounded-full font-bold transition-all ${
-                  shape === "square"
-                    ? "bg-pink-400 text-white shadow"
-                    : "text-pink-500 hover:bg-pink-100"
-                }`}
-                title={t("preview.shape.square")}
-              >
-                ⬜ {t("preview.shape.square")}
-              </button>
+                label={t("preview.shape.square")}
+                icon={
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <rect x="5" y="5" width="14" height="14" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                }
+              />
             </div>
-            <label className="flex items-center gap-1 text-pink-500 font-bold cursor-pointer select-none">
+
+            <label className="inline-flex items-center gap-2 h-9 px-3 rounded-full border border-[color:var(--hairline)] cursor-pointer select-none hover:bg-paper-2 transition-colors">
               <input
                 type="checkbox"
                 checked={showLabels}
                 onChange={(e) => setShowLabels(e.target.checked)}
-                className="w-3.5 h-3.5 rounded accent-pink-400"
+                className="riso"
               />
-              {t("preview.labels")}
+              <span className="text-[0.8rem] text-ink">
+                {t("preview.labels")}
+              </span>
             </label>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {pattern ? (
-        <div className="overflow-auto rounded-2xl bg-gradient-to-br from-pink-50 to-purple-50 p-2">
+        <div className="overflow-auto rounded-[16px] bg-paper-2 p-3">
           <canvas
             ref={canvasRef}
             onClick={handleClick}
             onMouseMove={handleMove}
             onMouseLeave={handleLeave}
             style={{ cursor, imageRendering: "auto" }}
-            className="rounded-xl"
+            className="rounded-md mx-auto block"
           />
         </div>
       ) : canGenerate && onGenerate ? (
-        // Ready-to-generate state: the placeholder *is* the generate
-        // action, because a passive "pattern will appear here" hint left
-        // users hunting for the tiny button tucked into the controls bar.
         <button
           type="button"
           onClick={onGenerate}
           disabled={isProcessing}
-          className="group aspect-square w-full flex items-center justify-center rounded-2xl bg-gradient-to-br from-pink-50 to-purple-50 hover:from-pink-100 hover:to-purple-100 transition-colors disabled:cursor-wait"
+          className="group relative aspect-square w-full rounded-[16px] bg-paper-2 overflow-hidden flex items-center justify-center disabled:cursor-wait transition-colors hover:bg-paper-3/40"
         >
           <span
-            className={`px-8 py-4 text-white text-lg font-extrabold rounded-full shadow-xl transition-transform bg-gradient-to-r from-pink-400 to-purple-400 ${
-              isProcessing
-                ? "opacity-80"
-                : "group-hover:scale-105 group-active:scale-95 animate-pulse-slow"
+            className={`btn btn-coral display text-[1.1rem] sm:text-[1.2rem] px-7 py-3.5 tracking-[-0.01em] ${
+              isProcessing ? "opacity-80" : ""
             }`}
           >
-            {isProcessing ? t("controls.generating") : t("controls.generate")}
+            {isProcessing ? (
+              <>
+                <Spinner />
+                {t("controls.generating")}
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path
+                    d="M12 3l2 6h6l-5 4 2 6-5-3.5-5 3.5 2-6-5-4h6z"
+                    fill="currentColor"
+                  />
+                </svg>
+                {t("controls.generate")}
+              </>
+            )}
           </span>
         </button>
       ) : (
-        <div className="h-[200px] flex items-center justify-center text-gray-400 text-sm bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl">
-          {t("preview.patternPrompt")}
+        <div className="min-h-[260px] flex items-center justify-center text-center text-ink-soft bg-paper-2 rounded-[16px] p-8">
+          <span className="display-italic text-[1.3rem] sm:text-[1.5rem]">
+            {t("preview.patternPrompt")}
+          </span>
         </div>
       )}
 
-      {/* Hover tooltip — shows the bead's SKU so users can cross-reference
-          against the inventory without clicking. */}
       {hover && (
         <div
-          className="pointer-events-none absolute z-10 rounded-lg bg-gray-900/90 text-white px-2 py-1 text-xs font-mono shadow-lg whitespace-nowrap"
+          className="pointer-events-none absolute z-10 rounded-md bg-ink text-paper px-2 py-1 text-[0.72rem] font-mono whitespace-nowrap shadow-lg"
           style={{
             left: Math.min(hover.x + 14, (containerWidth || 9999) - 120),
-            top: Math.max(hover.y - 28, 4),
+            top: Math.max(hover.y - 30, 4),
           }}
         >
           <span
-            className="inline-block w-2.5 h-2.5 rounded-full border border-white/40 mr-1.5 align-middle"
+            className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle"
             style={{ backgroundColor: hover.color.hex }}
           />
           {hover.color.sku}
         </div>
       )}
-    </div>
+    </section>
+  );
+}
+
+function SegmentToggle({
+  active,
+  onClick,
+  label,
+  icon,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      aria-pressed={active}
+      className={`inline-flex items-center gap-1.5 h-8 px-3 text-[0.78rem] font-medium rounded-full transition-colors ${
+        active ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" opacity="0.3" />
+      <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
   );
 }

@@ -13,7 +13,7 @@ const labels: Record<Locale, string> = {
 export default function LanguageSwitcher() {
   const { locale, setLocale, t } = useI18n();
   return (
-    <div className="inline-flex rounded-full bg-white/80 backdrop-blur p-1 border-2 border-pink-200 shadow-sm">
+    <div className="inline-flex items-center gap-1 rounded-full bg-paper-2 p-1">
       {LOCALES.map((l) => {
         const active = l === locale;
         return (
@@ -21,10 +21,10 @@ export default function LanguageSwitcher() {
             key={l}
             onClick={() => setLocale(l)}
             title={t(l === "en" ? "lang.en" : l === "zh-CN" ? "lang.zhCN" : "lang.zhTW")}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+            className={`px-3 min-w-[40px] h-8 rounded-full text-[0.8rem] font-medium transition-colors ${
               active
-                ? "bg-pink-400 text-white shadow"
-                : "text-pink-500 hover:bg-pink-100"
+                ? "bg-ink text-paper"
+                : "text-ink-soft hover:text-ink"
             }`}
           >
             {labels[l]}

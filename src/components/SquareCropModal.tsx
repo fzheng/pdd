@@ -115,28 +115,32 @@ export default function SquareCropModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-ink/45 backdrop-blur-[3px] flex items-center justify-center p-4 animate-reveal"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white rounded-3xl p-5 shadow-2xl max-w-[460px] w-full border-4 border-pink-200">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-extrabold text-pink-600">
-            ✂️ {t("crop.title")}
-          </h3>
+      <div className="card p-5 sm:p-6 max-w-[460px] w-full">
+        <div className="flex items-center justify-between mb-3 gap-3">
+          <span className="display text-[1.35rem] text-ink leading-none">
+            {t("crop.title")}
+          </span>
           <button
             onClick={onCancel}
-            className="w-8 h-8 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-500 font-bold text-lg flex items-center justify-center"
+            className="w-10 h-10 rounded-full hover:bg-paper-2 flex items-center justify-center transition-colors"
             aria-label={t("common.close")}
           >
-            ×
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
           </button>
         </div>
 
-        <p className="text-xs text-gray-500 mb-3">{t("crop.hint")}</p>
+        <p className="text-[0.82rem] text-ink-soft mb-4">
+          {t("crop.hint")}
+        </p>
 
         <div
-          className="relative mx-auto overflow-hidden rounded-2xl bg-gradient-to-br from-pink-50 to-purple-50 select-none touch-none"
+          className="relative mx-auto overflow-hidden rounded-[16px] bg-paper-2 select-none touch-none"
           style={{ width: VIEWPORT, height: VIEWPORT }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -156,18 +160,16 @@ export default function SquareCropModal({
               cursor: "grab",
             }}
           />
-          {/* 3×3 grid overlay for composition */}
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-0 border-2 border-white/80 rounded-2xl" />
-            <div className="absolute top-1/3 left-0 right-0 h-px bg-white/40" />
-            <div className="absolute top-2/3 left-0 right-0 h-px bg-white/40" />
-            <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/40" />
-            <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/40" />
+            <div className="absolute inset-0 ring-1 ring-paper/60 rounded-[16px]" />
+            <div className="absolute top-1/3 left-0 right-0 h-px bg-paper/40" />
+            <div className="absolute top-2/3 left-0 right-0 h-px bg-paper/40" />
+            <div className="absolute left-1/3 top-0 bottom-0 w-px bg-paper/40" />
+            <div className="absolute left-2/3 top-0 bottom-0 w-px bg-paper/40" />
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-3">
-          <span className="text-xs font-bold text-pink-500">🔍</span>
+        <div className="mt-5 flex items-center gap-3">
           <input
             type="range"
             min={1}
@@ -175,24 +177,22 @@ export default function SquareCropModal({
             step={0.01}
             value={zoom}
             onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
-            className="flex-1 accent-pink-400"
+            className="riso flex-1"
+            aria-label="Zoom"
           />
-          <span className="text-xs font-mono text-gray-500 w-10 text-right">
+          <span className="font-mono text-[0.78rem] text-ink tabular-nums min-w-[54px] text-right">
             {zoom.toFixed(2)}×
           </span>
         </div>
 
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200"
-          >
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onCancel} className="btn btn-ghost">
             {t("common.cancel")}
           </button>
           <button
             onClick={handleConfirm}
             disabled={busy}
-            className="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-pink-400 to-purple-400 rounded-full shadow hover:shadow-lg disabled:opacity-50"
+            className="btn btn-ink"
           >
             {busy ? t("common.working") : t("crop.confirm")}
           </button>

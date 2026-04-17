@@ -1,74 +1,109 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────
+ * Soft Atelier — calm, confident craft studio
+ * Warm paper surfaces, quiet color accents, generous whitespace.
+ * ──────────────────────────────────────────────────────────── */
 :root {
-  --background: #fff8fb;
-  --foreground: #3d2244;
+  /* Paper & ink */
+  --paper: #faf6ef;
+  --paper-2: #f2ece0;
+  --paper-3: #e4dccb;
+  --ink: #1b1418;
+  --ink-2: #2d2328;
+  --ink-soft: #6c5e62;
+  --hairline: #1b141833;
+
+  /* Accent colors — soft-riso, used sparingly */
+  --coral: #f25c47;
+  --coral-ink: #b7321e;
+  --blue: #2f54f3;
+  --blue-ink: #1d36b0;
+  --lime: #cfe84a;
+  --lime-ink: #7a9400;
+  --butter: #f3c23a;
+  --butter-ink: #b88300;
+  --plum: #bd6ad4;
+  --plum-ink: #7a2f8e;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans:
-    "PingFang SC", "Microsoft YaHei", "Nunito", "Baloo 2", "Comic Sans MS",
+
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-soft: var(--ink-soft);
+
+  --color-coral: var(--coral);
+  --color-coral-ink: var(--coral-ink);
+  --color-blue: var(--blue);
+  --color-blue-ink: var(--blue-ink);
+  --color-lime: var(--lime);
+  --color-lime-ink: var(--lime-ink);
+  --color-butter: var(--butter);
+  --color-butter-ink: var(--butter-ink);
+  --color-plum: var(--plum);
+  --color-plum-ink: var(--plum-ink);
+
+  --font-display:
+    var(--font-display, "Fraunces"), "Cormorant Garamond", "Noto Serif SC",
+    "Songti SC", "STSong", "Georgia", serif;
+  --font-body:
+    var(--font-body, "Geist"), "PingFang SC", "Microsoft YaHei", "Nunito",
     ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono",
-    monospace;
+  --font-mono:
+    var(--font-mono, "JetBrains Mono"), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, "Liberation Mono", monospace;
+}
+
+html {
+  color-scheme: light;
 }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 10% -10%, #ffe4f1 0%, transparent 50%),
-    radial-gradient(1000px 600px at 110% 10%, #e0f2fe 0%, transparent 50%),
-    radial-gradient(800px 500px at 50% 110%, #fef9c3 0%, transparent 50%),
-    #fff8fb;
+  background-color: var(--paper);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
+  font-feature-settings: "ss01", "cv11";
+  /* Very soft color washes, no textures — just atmospheric depth. */
+  background-image:
+    radial-gradient(
+      90% 60% at 0% 0%,
+      rgba(242, 92, 71, 0.08),
+      transparent 60%
+    ),
+    radial-gradient(
+      60% 50% at 100% 0%,
+      rgba(47, 84, 243, 0.06),
+      transparent 55%
+    ),
+    radial-gradient(
+      80% 60% at 100% 100%,
+      rgba(207, 232, 74, 0.10),
+      transparent 60%
+    );
   background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
 }
 
-@keyframes bounce-slow {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
+::selection {
+  background: var(--lime);
+  color: var(--ink);
 }
 
-.animate-bounce-slow {
-  animation: bounce-slow 2.5s ease-in-out infinite;
-}
-
-@keyframes wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-3deg); }
-  75% { transform: rotate(3deg); }
-}
-
-.animate-wiggle {
-  animation: wiggle 1.5s ease-in-out infinite;
-}
-
-/* Slow, gentle pulse — used on the sidebar open-handle chevron so the
- * drawer's "there's a panel here, click me" affordance is visible
- * without being annoying. */
-@keyframes pulse-slow {
-  0%, 100% { opacity: 1; transform: translateX(0); }
-  50% { opacity: 0.55; transform: translateX(-3px); }
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 1.8s ease-in-out infinite;
-}
-
-/* Rounded focus rings matching the theme */
 *:focus-visible {
-  outline: 3px solid rgba(244, 114, 182, 0.5);
+  outline: 2px solid var(--coral);
   outline-offset: 2px;
-  border-radius: 0.5rem;
+  border-radius: 6px;
 }
 
-/* Hide number spinner on webkit to keep the UI clean */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -77,3 +112,210 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* ────────── Range slider — calm, minimal, still tactile ────────── */
+input[type="range"].riso {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 24px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].riso::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--paper-3);
+  border-radius: 999px;
+}
+input[type="range"].riso::-moz-range-track {
+  height: 4px;
+  background: var(--paper-3);
+  border-radius: 999px;
+}
+input[type="range"].riso::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  border: 3px solid var(--paper);
+  box-shadow: 0 1px 3px rgba(27, 20, 24, 0.25);
+  margin-top: -9px;
+  transition: transform 0.12s ease;
+}
+input[type="range"].riso:active::-webkit-slider-thumb {
+  transform: scale(0.92);
+}
+input[type="range"].riso::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  border: 3px solid var(--paper);
+  box-shadow: 0 1px 3px rgba(27, 20, 24, 0.25);
+}
+
+/* ────────── Select — quiet chip ────────── */
+select.riso {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) 50%,
+    calc(100% - 10px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 10px 34px 10px 14px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--ink);
+  min-height: 44px;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+select.riso:hover {
+  background-color: var(--paper-2);
+  border-color: var(--ink);
+}
+select.riso:focus-visible {
+  border-color: var(--ink);
+}
+
+/* ────────── Checkbox ────────── */
+input[type="checkbox"].riso {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--ink);
+  border-radius: 7px;
+  background: var(--paper);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.12s ease;
+}
+input[type="checkbox"].riso:checked {
+  background: var(--ink);
+}
+input[type="checkbox"].riso:checked::after {
+  content: "";
+  position: absolute;
+  inset: 3px 5px;
+  border-right: 2.5px solid var(--paper);
+  border-bottom: 2.5px solid var(--paper);
+  transform: rotate(42deg) translate(-1px, -2px);
+}
+
+/* ────────── Card — soft paper plane ────────── */
+.card {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 22px;
+  box-shadow: 0 1px 0 0 rgba(27, 20, 24, 0.04),
+    0 12px 28px -20px rgba(27, 20, 24, 0.18);
+}
+.card-tight {
+  border-radius: 18px;
+  box-shadow: 0 1px 0 0 rgba(27, 20, 24, 0.04),
+    0 8px 20px -16px rgba(27, 20, 24, 0.18);
+}
+
+/* ────────── Button ────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.2rem;
+  min-height: 44px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  font-size: 0.92rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.12s ease, background-color 0.12s ease,
+    color 0.12s ease, border-color 0.12s ease;
+}
+.btn:hover {
+  background: var(--paper-2);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-ink {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.btn-ink:hover {
+  background: var(--ink-2);
+}
+.btn-coral {
+  background: var(--coral);
+  color: var(--paper);
+  border-color: var(--coral);
+}
+.btn-coral:hover {
+  background: var(--coral-ink);
+  border-color: var(--coral-ink);
+}
+.btn-blue {
+  background: var(--blue);
+  color: var(--paper);
+  border-color: var(--blue);
+}
+.btn-blue:hover {
+  background: var(--blue-ink);
+  border-color: var(--blue-ink);
+}
+.btn-ghost {
+  border-color: var(--hairline);
+}
+.btn-ghost:hover {
+  border-color: var(--ink);
+}
+
+/* ────────── Display type helpers ────────── */
+.display {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+  letter-spacing: -0.03em;
+  font-weight: 520;
+}
+.display-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  letter-spacing: -0.02em;
+  font-weight: 440;
+}
+
+/* ────────── Micro animations — subtle only ────────── */
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-reveal {
+  animation: reveal 0.45s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+}
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.12s; }
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }

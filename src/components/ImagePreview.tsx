@@ -4,24 +4,15 @@ import { useRef } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
 
 interface ImagePreviewProps {
-  /** Object URL of the cropped source image; null when nothing is uploaded. */
   imageUrl: string | null;
-  /** Whether the pattern has been generated — enables the compare action. */
   canCompare: boolean;
-  /** Fired when the user clicks the thumbnail to open the compare modal. */
   onOpenCompare: () => void;
-  /** Swap-image handler — triggers a new file pick. */
   onSwapImage?: (file: File) => void;
 }
 
 /**
- * Compact thumbnail of the user's cropped source image.
- *
- * Once a pattern is generated, clicking the thumbnail opens the
- * before/after comparison modal. The compare affordance is rendered
- * **persistently** as a pill overlaying the image — earlier iterations
- * used hover-only, but users reported they never knew the thumbnail
- * was clickable until they happened to mouse over it.
+ * Source-image card. The thumbnail itself is the compare trigger when a
+ * pattern exists; the swap-image button sits underneath.
  */
 export default function ImagePreview({
   imageUrl,
@@ -41,17 +32,14 @@ export default function ImagePreview({
   }
 
   return (
-    <div className="bg-white rounded-3xl border-4 border-sky-200 p-3 shadow-lg">
-      <h3 className="text-xs font-bold text-sky-500 mb-2 flex items-center gap-1">
-        📸 {t("preview.original")}
-      </h3>
+    <aside className="card p-3 flex flex-col gap-3">
       {imageUrl ? (
         <>
           <button
             type="button"
             onClick={canCompare ? onOpenCompare : undefined}
             disabled={!canCompare}
-            className={`relative group block w-full rounded-2xl overflow-hidden bg-gradient-to-br from-sky-50 to-cyan-50 ${
+            className={`group relative block w-full rounded-[16px] overflow-hidden bg-paper-2 ${
               canCompare ? "cursor-pointer" : "cursor-default"
             }`}
             title={canCompare ? t("preview.openCompare") : undefined}
@@ -59,16 +47,17 @@ export default function ImagePreview({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}
-              alt="Cropped preview"
-              className="w-full aspect-square object-cover"
+              alt="Source"
+              className="block w-full aspect-square object-cover transition-transform group-hover:scale-[1.02]"
             />
             {canCompare && (
-              <>
-                <span className="absolute left-1/2 bottom-2 -translate-x-1/2 text-[11px] font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-lg whitespace-nowrap animate-pulse-slow">
-                  🔀 {t("preview.openCompare")}
-                </span>
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-              </>
+              <span className="absolute left-2 right-2 bottom-2 flex items-center justify-center gap-1.5 text-[0.72rem] font-semibold text-paper bg-ink/85 backdrop-blur rounded-full px-2 py-1.5">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <rect x="3" y="4" width="7" height="16" rx="1" stroke="currentColor" strokeWidth="2" />
+                  <rect x="14" y="4" width="7" height="16" rx="1" stroke="currentColor" strokeWidth="2" />
+                </svg>
+                {t("preview.openCompare")}
+              </span>
             )}
           </button>
 
@@ -84,18 +73,18 @@ export default function ImagePreview({
               <button
                 type="button"
                 onClick={() => swapRef.current?.click()}
-                className="mt-2 w-full py-1.5 text-xs font-bold text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-full border border-pink-200 transition-colors"
+                className="btn btn-ghost w-full justify-center text-[0.82rem]"
               >
-                📷 {t("upload.swap")}
+                {t("upload.swap")}
               </button>
             </>
           )}
         </>
       ) : (
-        <div className="aspect-square flex items-center justify-center text-gray-400 text-xs text-center bg-gradient-to-br from-sky-50 to-cyan-50 rounded-2xl p-3">
+        <div className="aspect-square flex items-center justify-center text-center text-[0.85rem] text-ink-soft bg-paper-2 rounded-[16px] p-4">
           {t("preview.uploadPrompt")}
         </div>
       )}
-    </div>
+    </aside>
   );
 }

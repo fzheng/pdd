@@ -185,32 +185,24 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
 
-      <main className="max-w-7xl mx-auto w-full px-4 py-6 space-y-5 flex-1">
-        {/* Big drop-zone only before the first upload; afterwards the
-            swap-image button inside ControlPanel takes over. */}
+      <main className="max-w-[1400px] mx-auto w-full px-5 sm:px-8 py-6 sm:py-10 space-y-8 flex-1">
+        {/* Pre-upload hero: editorial intro + drop zone */}
         {!croppedImage && <ImageUploader onImageSelected={handleImageSelected} />}
 
         {croppedImage && (
-          <ControlPanel
-            settings={settings}
-            onSettingsChange={setSettings}
-          />
+          <ControlPanel settings={settings} onSettingsChange={setSettings} />
         )}
 
-        {/* Main workspace: thumbnail + pattern. Bead sidebar is a
-            fixed-positioned drawer (sibling below) — it overlays rather
-            than reflows, so the pattern canvas size is stable regardless
-            of whether the inventory is open. */}
+        {/* Working grid. iPad-first: single col portrait, two cols landscape+.
+            Drawer is fixed-positioned (below) so toggling it never reflows. */}
         {croppedUrl ? (
-          <div className="grid grid-cols-[max-content_1fr] gap-3 items-start">
-            <div className="w-32 sm:w-40">
-              <ImagePreview
-                imageUrl={croppedUrl}
-                canCompare={!!pattern}
-                onOpenCompare={() => setCompareOpen(true)}
-                onSwapImage={handleImageSelected}
-              />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-[minmax(180px,220px)_1fr] gap-5 md:gap-6 items-start">
+            <ImagePreview
+              imageUrl={croppedUrl}
+              canCompare={!!pattern}
+              onOpenCompare={() => setCompareOpen(true)}
+              onSwapImage={handleImageSelected}
+            />
             <div className="min-w-0">
               <BeadPatternView
                 pattern={pattern}
