@@ -14,6 +14,14 @@ interface BeadPatternProps {
   onGenerate?: () => void;
   canGenerate?: boolean;
   isProcessing?: boolean;
+  /** Optional controlled value. Falls back to internal state. */
+  shape?: BeadShape;
+  onShapeChange?: (next: BeadShape) => void;
+  /** Optional controlled value. Falls back to internal state. */
+  showLabels?: boolean;
+  onShowLabelsChange?: (next: boolean) => void;
+  /** Fires when the user taps the Focus button. */
+  onEnterFocus?: () => void;
 }
 
 /**
@@ -28,10 +36,24 @@ export default function BeadPattern({
   onGenerate,
   canGenerate = false,
   isProcessing = false,
+  shape: propsShape,
+  onShapeChange,
+  showLabels: propsShowLabels,
+  onShowLabelsChange,
 }: BeadPatternProps) {
   const { t } = useI18n();
-  const [shape, setShape] = useState<BeadShape>("circle");
-  const [showLabels, setShowLabels] = useState(false);
+  const [shapeInternal, setShapeInternal] = useState<BeadShape>("circle");
+  const [showLabelsInternal, setShowLabelsInternal] = useState(false);
+  const shape = propsShape ?? shapeInternal;
+  const showLabels = propsShowLabels ?? showLabelsInternal;
+  const setShape = (next: BeadShape) => {
+    if (onShapeChange) onShapeChange(next);
+    else setShapeInternal(next);
+  };
+  const setShowLabels = (next: boolean) => {
+    if (onShowLabelsChange) onShowLabelsChange(next);
+    else setShowLabelsInternal(next);
+  };
 
   return (
     <section className="card p-4 sm:p-5 relative">
