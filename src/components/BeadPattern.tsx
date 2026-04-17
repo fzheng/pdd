@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useEffect, MouseEvent, useState, useCallback } from "react";
+import { useState } from "react";
 import { BeadPattern as BeadPatternType, BeadColor } from "@/types";
-import { renderPatternToCanvas, BeadShape } from "@/lib/renderPattern";
+import { BeadShape } from "@/lib/renderPattern";
 import { useI18n } from "@/i18n/I18nProvider";
+import PatternCanvas from "@/components/PatternCanvas";
 
 interface BeadPatternProps {
   pattern: BeadPatternType | null;
@@ -29,117 +30,11 @@ export default function BeadPattern({
   isProcessing = false,
 }: BeadPatternProps) {
   const { t } = useI18n();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cellSizeRef = useRef(16);
-
   const [shape, setShape] = useState<BeadShape>("circle");
   const [showLabels, setShowLabels] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [resizeTick, setResizeTick] = useState(0);
-  const [hover, setHover] = useState<{
-    color: BeadColor;
-    row: number;
-    col: number;
-    x: number;
-    y: number;
-  } | null>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const onResize = () => setResizeTick((t) => t + 1);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !pattern || !container) return;
-
-    const cw = container.clientWidth;
-    setContainerWidth(cw);
-
-    const rect = container.getBoundingClientRect();
-    const availH = Math.max(240, window.innerHeight - rect.top - 40);
-
-    const innerW = cw - 24;
-    const innerH = availH - 120;
-
-    const maxByW = Math.floor(innerW / pattern.width);
-    const maxByH = Math.floor(innerH / pattern.height);
-    let cs = Math.max(4, Math.min(maxByW, maxByH, 32));
-    if (showLabels) cs = Math.max(cs, 14);
-    cellSizeRef.current = cs;
-
-    canvas.width = pattern.width * cs;
-    canvas.height = pattern.height * cs;
-
-    const ctx = canvas.getContext("2d")!;
-    renderPatternToCanvas(ctx, pattern, {
-      cellSize: cs,
-      shape,
-      showGridLines: shape === "square",
-      showColorCodes: showLabels,
-      background: "#FAF6EF",
-    });
-  }, [pattern, shape, showLabels, resizeTick]);
-
-  const getCellAt = useCallback(
-    (e: MouseEvent<HTMLCanvasElement>): { row: number; col: number } | null => {
-      if (!pattern) return null;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const scaleX = e.currentTarget.width / rect.width;
-      const scaleY = e.currentTarget.height / rect.height;
-      const x = (e.clientX - rect.left) * scaleX;
-      const y = (e.clientY - rect.top) * scaleY;
-      const cs = cellSizeRef.current;
-      const col = Math.floor(x / cs);
-      const row = Math.floor(y / cs);
-      if (col < 0 || col >= pattern.width || row < 0 || row >= pattern.height) {
-        return null;
-      }
-      return { row, col };
-    },
-    [pattern],
-  );
-
-  function handleClick(e: MouseEvent<HTMLCanvasElement>) {
-    if (!pattern || editMode === "none" || !onCellClick) return;
-    const hit = getCellAt(e);
-    if (!hit) return;
-    onCellClick(hit.row, hit.col, pattern.cells[hit.row][hit.col].beadColor);
-  }
-
-  function handleMove(e: MouseEvent<HTMLCanvasElement>) {
-    if (!pattern) return;
-    const hit = getCellAt(e);
-    if (!hit) {
-      setHover(null);
-      return;
-    }
-    const color = pattern.cells[hit.row][hit.col].beadColor;
-    const contRect = containerRef.current?.getBoundingClientRect();
-    const px = contRect ? e.clientX - contRect.left : e.clientX;
-    const py = contRect ? e.clientY - contRect.top : e.clientY;
-    setHover({ color, row: hit.row, col: hit.col, x: px, y: py });
-  }
-
-  function handleLeave() {
-    setHover(null);
-  }
-
-  const cursor =
-    editMode === "brush"
-      ? activeColor
-        ? "cell"
-        : "not-allowed"
-      : editMode === "replace"
-        ? "pointer"
-        : "crosshair";
 
   return (
-    <section ref={containerRef} className="card p-4 sm:p-5 relative">
+    <section className="card p-4 sm:p-5 relative">
       {pattern && (
         <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
           <span className="font-mono text-[0.72rem] text-ink-soft tabular-nums">
@@ -185,14 +80,15 @@ export default function BeadPattern({
       )}
 
       {pattern ? (
-        <div className="overflow-auto rounded-[16px] bg-paper-2 p-3">
-          <canvas
-            ref={canvasRef}
-            onClick={handleClick}
-            onMouseMove={handleMove}
-            onMouseLeave={handleLeave}
-            style={{ cursor, imageRendering: "auto" }}
-            className="rounded-md mx-auto block"
+        <div className="overflow-auto rounded-[16px] bg-paper-2 p-3 min-h-[240px]">
+          <PatternCanvas
+            pattern={pattern}
+            shape={shape}
+            showLabels={showLabels}
+            editMode={editMode}
+            activeColor={activeColor ?? null}
+            onCellClick={onCellClick}
+            maxCellSize={32}
           />
         </div>
       ) : canGenerate && onGenerate ? (
@@ -230,22 +126,6 @@ export default function BeadPattern({
           <span className="display-italic text-[1.3rem] sm:text-[1.5rem]">
             {t("preview.patternPrompt")}
           </span>
-        </div>
-      )}
-
-      {hover && (
-        <div
-          className="pointer-events-none absolute z-10 rounded-md bg-ink text-paper px-2 py-1 text-[0.72rem] font-mono whitespace-nowrap shadow-lg"
-          style={{
-            left: Math.min(hover.x + 14, (containerWidth || 9999) - 120),
-            top: Math.max(hover.y - 30, 4),
-          }}
-        >
-          <span
-            className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle"
-            style={{ backgroundColor: hover.color.hex }}
-          />
-          {hover.color.sku}
         </div>
       )}
     </section>
