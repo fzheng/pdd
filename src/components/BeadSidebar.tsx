@@ -5,6 +5,7 @@ import { BeadColor, BeadPattern } from "@/types";
 import { EditMode } from "@/components/EditorToolbar";
 import { useI18n } from "@/i18n/I18nProvider";
 import { localizedColorName } from "@/i18n/colorNames";
+import ColorTile from "@/components/ColorTile";
 
 interface BeadSidebarProps {
   pattern: BeadPattern | null;
@@ -205,39 +206,17 @@ export default function BeadSidebar({
         {/* Color list */}
         <div className="overflow-auto p-2 flex-1">
           <ul className="space-y-1">
-            {entries.map(({ color, count }) => {
-              const active = color.id === activeColor?.id;
-              const clickable = mode !== "none";
-              return (
-                <li key={color.id}>
-                  <button
-                    type="button"
-                    onClick={clickable ? () => onPickColor(color) : undefined}
-                    disabled={!clickable}
-                    className={`w-full grid grid-cols-[auto_1fr_auto_auto] items-center gap-2.5 px-3 py-2 min-h-[48px] text-left rounded-xl transition-colors ${
-                      clickable ? "hover:bg-paper-2 cursor-pointer" : "cursor-default"
-                    } ${active ? "bg-paper-2 ring-1 ring-ink" : ""}`}
-                  >
-                    <span
-                      className="w-7 h-7 rounded-full shrink-0"
-                      style={{
-                        backgroundColor: color.hex,
-                        boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.1)",
-                      }}
-                    />
-                    <span className="truncate text-[0.88rem] text-ink">
-                      {localizedColorName(color.name, locale)}
-                    </span>
-                    <span className="font-mono text-[0.72rem] text-ink-soft">
-                      {color.sku}
-                    </span>
-                    <span className="font-mono text-[0.85rem] text-ink tabular-nums">
-                      {count}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
+            {entries.map(({ color, count }) => (
+              <li key={color.id}>
+                <ColorTile
+                  color={color}
+                  count={count}
+                  variant="row"
+                  active={color.id === activeColor?.id}
+                  onSelect={mode !== "none" ? onPickColor : undefined}
+                />
+              </li>
+            ))}
           </ul>
         </div>
       </aside>

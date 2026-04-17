@@ -64,11 +64,12 @@ describe("BeadSidebar", () => {
     fireEvent.click(firstRow);
     expect(props.onPickColor).toHaveBeenCalled();
 
-    // In "none" mode the rows are disabled
+    // In "none" mode the rows are not clickable (ColorTile renders a
+    // plain div instead of a button when no onSelect prop is passed).
     props.onPickColor.mockClear();
     rerender(<BeadSidebar {...props} mode="none" />);
-    const row = document.querySelector("aside ul li button") as HTMLElement;
-    fireEvent.click(row);
+    const row = document.querySelector("aside ul li button");
+    expect(row).toBeNull();
     expect(props.onPickColor).not.toHaveBeenCalled();
   });
 
