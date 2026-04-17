@@ -1,0 +1,508 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "豆P" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: 豆P
+        - generic [ref=e12]:
+          - button "中" [ref=e13]
+          - button "繁" [ref=e14]
+          - button "EN" [ref=e15]
+    - main [ref=e16]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]: 图纸尺寸（方形）
+            - generic [ref=e68]: 58 × 58
+          - slider "图纸尺寸（方形）" [ref=e69] [cursor=pointer]: "58"
+        - generic [ref=e70]:
+          - generic [ref=e72]: 豆豆品牌
+          - combobox "豆豆品牌" [ref=e73]:
+            - option "Perler (90)" [selected]
+            - option "Hama (48)"
+            - option "Artkal (144)"
+            - option "Nabbi (30)"
+            - option "Mard (47)"
+        - button "高级设置" [ref=e74] [cursor=pointer]:
+          - generic [ref=e75]: +
+          - text: 高级设置
+      - generic [ref=e76]:
+        - complementary [ref=e77]:
+          - button "原图预览 点击对比" [ref=e87] [cursor=pointer]:
+            - img "原图预览" [ref=e79]
+            - generic [ref=e88]:
+              - img [ref=e89]
+              - text: 点击对比
+          - button "换一张" [ref=e80] [cursor=pointer]
+        - generic [ref=e92]:
+          - generic [ref=e93]: 58 × 58
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - button "圆豆" [ref=e96]:
+                - img [ref=e97]
+                - text: 圆豆
+              - button "方格" [active] [pressed] [ref=e99]:
+                - img [ref=e100]
+                - text: 方格
+            - generic [ref=e102] [cursor=pointer]:
+              - checkbox "图纸上显示色号" [ref=e103]
+              - generic [ref=e104]: 图纸上显示色号
+            - button "专注模式" [ref=e105] [cursor=pointer]:
+              - img [ref=e106]
+              - generic [ref=e108]: 专注模式
+      - button "展开侧边栏" [ref=e112]:
+        - generic [ref=e118]: "81"
+      - complementary:
+        - generic:
+          - generic:
+            - generic: 豆豆清单
+            - generic: 81 种颜色 · 共 3364 颗
+          - button:
+            - img
+        - generic:
+          - generic:
+            - button:
+              - img
+              - text: 画笔
+            - button:
+              - img
+              - text: 颜色替换
+          - generic:
+            - button [disabled]: ↶ 撤销
+            - button [disabled]: ↷ 重做
+        - generic:
+          - list:
+            - listitem:
+              - generic:
+                - generic: 兰花紫
+                - generic: P74
+                - generic: "219"
+            - listitem:
+              - generic:
+                - generic: 薰衣草
+                - generic: P31
+                - generic: "175"
+            - listitem:
+              - generic:
+                - generic: 仙人掌绿
+                - generic: P26
+                - generic: "139"
+            - listitem:
+              - generic:
+                - generic: 石板蓝
+                - generic: P82
+                - generic: "132"
+            - listitem:
+              - generic:
+                - generic: 香料色
+                - generic: P51
+                - generic: "129"
+            - listitem:
+              - generic:
+                - generic: 深绿
+                - generic: P11
+                - generic: "118"
+            - listitem:
+              - generic:
+                - generic: 霓虹绿
+                - generic: P38
+                - generic: "117"
+            - listitem:
+              - generic:
+                - generic: 浅绿
+                - generic: P13
+                - generic: "106"
+            - listitem:
+              - generic:
+                - generic: 蜡笔蓝
+                - generic: P59
+                - generic: "102"
+            - listitem:
+              - generic:
+                - generic: 薄荷牙膏色
+                - generic: P29
+                - generic: "95"
+            - listitem:
+              - generic:
+                - generic: 苔藓绿
+                - generic: P91
+                - generic: "93"
+            - listitem:
+              - generic:
+                - generic: 奇异果青柠
+                - generic: P24
+                - generic: "90"
+            - listitem:
+              - generic:
+                - generic: 棕色
+                - generic: P14
+                - generic: "86"
+            - listitem:
+              - generic:
+                - generic: 钴蓝
+                - generic: P48
+                - generic: "85"
+            - listitem:
+              - generic:
+                - generic: 橄榄色
+                - generic: P76
+                - generic: "74"
+            - listitem:
+              - generic:
+                - generic: 茄紫
+                - generic: P85
+                - generic: "71"
+            - listitem:
+              - generic:
+                - generic: 葡萄紫
+                - generic: P87
+                - generic: "69"
+            - listitem:
+              - generic:
+                - generic: 浅棕
+                - generic: P16
+                - generic: "66"
+            - listitem:
+              - generic:
+                - generic: 桑葚紫
+                - generic: P58
+                - generic: "65"
+            - listitem:
+              - generic:
+                - generic: 薄荷
+                - generic: P68
+                - generic: "59"
+            - listitem:
+              - generic:
+                - generic: 长春花蓝
+                - generic: P45
+                - generic: "52"
+            - listitem:
+              - generic:
+                - generic: 浅蓝
+                - generic: P10
+                - generic: "49"
+            - listitem:
+              - generic:
+                - generic: 天蓝
+                - generic: P73
+                - generic: "44"
+            - listitem:
+              - generic:
+                - generic: 李紫
+                - generic: P23
+                - generic: "41"
+            - listitem:
+              - generic:
+                - generic: 紫色
+                - generic: P07
+                - generic: "40"
+            - listitem:
+              - generic:
+                - generic: 草绿
+                - generic: P60
+                - generic: "39"
+            - listitem:
+              - generic:
+                - generic: 糖果珊瑚
+                - generic: P64
+                - generic: "38"
+            - listitem:
+              - generic:
+                - generic: 常春藤绿
+                - generic: P47
+                - generic: "38"
+            - listitem:
+              - generic:
+                - generic: 樱桃红
+                - generic: P67
+                - generic: "37"
+            - listitem:
+              - generic:
+                - generic: 蔓越莓红
+                - generic: P20
+                - generic: "34"
+            - listitem:
+              - generic:
+                - generic: 知更鸟蛋蓝
+                - generic: P44
+                - generic: "33"
+            - listitem:
+              - generic:
+                - generic: 阳光黄
+                - generic: P61
+                - generic: "33"
+            - listitem:
+              - generic:
+                - generic: 黄色
+                - generic: P03
+                - generic: "33"
+            - listitem:
+              - generic:
+                - generic: 青绿
+                - generic: P65
+                - generic: "32"
+            - listitem:
+              - generic:
+                - generic: 藏青
+                - generic: P66
+                - generic: "31"
+            - listitem:
+              - generic:
+                - generic: 蕨绿
+                - generic: P46
+                - generic: "30"
+            - listitem:
+              - generic:
+                - generic: 霓虹粉
+                - generic: P39
+                - generic: "29"
+            - listitem:
+              - generic:
+                - generic: 潟湖绿
+                - generic: P52
+                - generic: "28"
+            - listitem:
+              - generic:
+                - generic: 桃红
+                - generic: P89
+                - generic: "27"
+            - listitem:
+              - generic:
+                - generic: 铁锈色
+                - generic: P19
+                - generic: "27"
+            - listitem:
+              - generic:
+                - generic: 蓝色
+                - generic: P09
+                - generic: "27"
+            - listitem:
+              - generic:
+                - generic: 粉彩薰衣草
+                - generic: P42
+                - generic: "27"
+            - listitem:
+              - generic:
+                - generic: 火烈鸟粉
+                - generic: P56
+                - generic: "26"
+            - listitem:
+              - generic:
+                - generic: 泡泡糖粉
+                - generic: P06
+                - generic: "26"
+            - listitem:
+              - generic:
+                - generic: 粉彩蓝
+                - generic: P40
+                - generic: "26"
+            - listitem:
+              - generic:
+                - generic: 常青绿
+                - generic: P83
+                - generic: "25"
+            - listitem:
+              - generic:
+                - generic: 三叶草绿
+                - generic: P12
+                - generic: "24"
+            - listitem:
+              - generic:
+                - generic: 洋红
+                - generic: P35
+                - generic: "21"
+            - listitem:
+              - generic:
+                - generic: 卡其色
+                - generic: P77
+                - generic: "21"
+            - listitem:
+              - generic:
+                - generic: 切达黄
+                - generic: P28
+                - generic: "19"
+            - listitem:
+              - generic:
+                - generic: 灰色
+                - generic: P17
+                - generic: "16"
+            - listitem:
+              - generic:
+                - generic: 青柠
+                - generic: P69
+                - generic: "16"
+            - listitem:
+              - generic:
+                - generic: 柠檬黄
+                - generic: P86
+                - generic: "16"
+            - listitem:
+              - generic:
+                - generic: 炭黑
+                - generic: P62
+                - generic: "15"
+            - listitem:
+              - generic:
+                - generic: 暗玫瑰
+                - generic: P84
+                - generic: "15"
+            - listitem:
+              - generic:
+                - generic: 浅灰
+                - generic: P34
+                - generic: "15"
+            - listitem:
+              - generic:
+                - generic: 黑色
+                - generic: P18
+                - generic: "14"
+            - listitem:
+              - generic:
+                - generic: 玉色
+                - generic: P81
+                - generic: "14"
+            - listitem:
+              - generic:
+                - generic: 杏色
+                - generic: P63
+                - generic: "14"
+            - listitem:
+              - generic:
+                - generic: 奶油糖色
+                - generic: P27
+                - generic: "13"
+            - listitem:
+              - generic:
+                - generic: 深蓝
+                - generic: P08
+                - generic: "12"
+            - listitem:
+              - generic:
+                - generic: 焦糖色
+                - generic: P70
+                - generic: "12"
+            - listitem:
+              - generic:
+                - generic: 绿松石
+                - generic: P25
+                - generic: "12"
+            - listitem:
+              - generic:
+                - generic: 棕褐色
+                - generic: P15
+                - generic: "12"
+            - listitem:
+              - generic:
+                - generic: 蜂蜜色
+                - generic: P80
+                - generic: "11"
+            - listitem:
+              - generic:
+                - generic: 梨色
+                - generic: P54
+                - generic: "11"
+            - listitem:
+              - generic:
+                - generic: 粉彩黄
+                - generic: P43
+                - generic: "10"
+            - listitem:
+              - generic:
+                - generic: 午夜蓝
+                - generic: P72
+                - generic: "9"
+            - listitem:
+              - generic:
+                - generic: 番茄红
+                - generic: P79
+                - generic: "9"
+            - listitem:
+              - generic:
+                - generic: 锡灰
+                - generic: P55
+                - generic: "9"
+            - listitem:
+              - generic:
+                - generic: 覆盆子红
+                - generic: P49
+                - generic: "8"
+            - listitem:
+              - generic:
+                - generic: 玫瑰
+                - generic: P90
+                - generic: "8"
+            - listitem:
+              - generic:
+                - generic: 粉彩绿
+                - generic: P41
+                - generic: "7"
+            - listitem:
+              - generic:
+                - generic: 陶土色
+                - generic: P78
+                - generic: "6"
+            - listitem:
+              - generic:
+                - generic: 橙色
+                - generic: P04
+                - generic: "6"
+            - listitem:
+              - generic:
+                - generic: 橘色
+                - generic: P57
+                - generic: "6"
+            - listitem:
+              - generic:
+                - generic: 奶油色
+                - generic: P02
+                - generic: "6"
+            - listitem:
+              - generic:
+                - generic: 青色
+                - generic: P71
+                - generic: "6"
+            - listitem:
+              - generic:
+                - generic: 腮红粉
+                - generic: P32
+                - generic: "5"
+            - listitem:
+              - generic:
+                - generic: 棕褐色
+                - generic: P92
+                - generic: "2"
+            - listitem:
+              - generic:
+                - generic: 鲑鱼色
+                - generic: P30
+                - generic: "2"
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - generic [ref=e121] [cursor=pointer]:
+            - checkbox "在每颗豆豆上显示色号" [checked] [ref=e122]
+            - generic [ref=e123]: 在每颗豆豆上显示色号
+          - generic [ref=e124] [cursor=pointer]:
+            - checkbox "按 29×29 拼豆板分页（方便实际拼装）" [ref=e125]
+            - generic [ref=e126]: 按 29×29 拼豆板分页（方便实际拼装）
+        - generic [ref=e127]:
+          - button "📷 导出 PNG" [ref=e128] [cursor=pointer]:
+            - img [ref=e129]
+            - text: 📷 导出 PNG
+          - button "📄 导出 PDF" [ref=e131] [cursor=pointer]:
+            - img [ref=e132]
+            - text: 📄 导出 PDF
+    - contentinfo [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: © 2026 SigmaPilot, LLC
+        - navigation [ref=e33]:
+          - link "什么是拼豆？" [ref=e34] [cursor=pointer]:
+            - /url: /learn/what-is-perler
+          - link "服务条款" [ref=e35] [cursor=pointer]:
+            - /url: /terms
+          - link "隐私政策" [ref=e36] [cursor=pointer]:
+            - /url: /privacy
+  - button "Open Next.js Dev Tools" [ref=e43] [cursor=pointer]:
+    - img [ref=e44]
+  - alert [ref=e37]

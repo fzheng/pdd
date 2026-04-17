@@ -1,0 +1,44 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "豆P" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: 豆P
+        - generic [ref=e12]:
+          - button "中" [ref=e13]
+          - button "繁" [ref=e14]
+          - button "EN" [ref=e15]
+    - main [ref=e16]:
+      - generic [ref=e17]:
+        - heading "一张照片，变成豆豆。" [level=1] [ref=e18]
+        - button "sample-bead.png 点这里换一张" [active] [ref=e47] [cursor=pointer]:
+          - paragraph [ref=e25]: sample-bead.png
+          - paragraph [ref=e26]: 点这里换一张
+      - generic [ref=e29]: 图纸会显示在这里 🎨
+    - contentinfo [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: © 2026 SigmaPilot, LLC
+        - navigation [ref=e33]:
+          - link "什么是拼豆？" [ref=e34] [cursor=pointer]:
+            - /url: /learn/what-is-perler
+          - link "服务条款" [ref=e35] [cursor=pointer]:
+            - /url: /terms
+          - link "隐私政策" [ref=e36] [cursor=pointer]:
+            - /url: /privacy
+    - dialog [ref=e48]:
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]: 裁剪为正方形
+          - button "关闭" [ref=e52]:
+            - img [ref=e53]
+        - paragraph [ref=e55]: 拖动移动位置，使用滑块缩放，选择你要的方形区域
+        - generic [ref=e57]:
+          - slider "Zoom" [ref=e58] [cursor=pointer]: "1"
+          - generic [ref=e59]: 1.00×
+        - generic [ref=e60]:
+          - button "取消" [ref=e61] [cursor=pointer]
+          - button "确认裁剪" [ref=e62] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e43] [cursor=pointer]:
+    - img [ref=e44]
+  - alert [ref=e37]
